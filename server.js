@@ -18,6 +18,32 @@ const FIREBASE_WEB_GOOGLE_CLIENT_ID = process.env.FIREBASE_WEB_GOOGLE_CLIENT_ID 
 const FIREBASE_WEB_AUTH_DOMAIN = process.env.FIREBASE_WEB_AUTH_DOMAIN || '';
 const FIREBASE_WEB_PROJECT_ID = process.env.FIREBASE_WEB_PROJECT_ID || '';
 const FIREBASE_WEB_APP_ID = process.env.FIREBASE_WEB_APP_ID || '';
+const APP_TIMEZONE = process.env.APP_TIMEZONE || 'America/Sao_Paulo';
+
+function getNowInAppTimezone() {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: APP_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter
+    .formatToParts(new Date())
+    .reduce((acc, part) => {
+      if (part.type !== 'literal') {
+        acc[part.type] = part.value;
+      }
+      return acc;
+    }, {});
+
+  const isoDate = `${parts.year}-${parts.month}-${parts.day}`;
+  const minutes = Number(parts.hour || 0) * 60 + Number(parts.minute || 0);
+  return { isoDate, minutes };
+}
 
 function getBaseStore() {
   return {
@@ -606,9 +632,9 @@ function buildSlots(member, service, dateStr, appointments, allServices) {
   const slotStep = slotStepMode === 'auto'
     ? Math.max(1, Math.round(serviceDuration || 30))
     : normalizeSlotStepMinutes(member.slotStepMinutes);
-  const now = dayjs();
-  const isToday = dayjs(dateStr).isSame(now, 'day');
-  const currentMinutes = now.hour() * 60 + now.minute();
+  const nowInAppTz = getNowInAppTimezone();
+  const isToday = String(dateStr || '') === nowInAppTz.isoDate;
+  const currentMinutes = nowInAppTz.minutes;
 
   const memberAppts = appointments.filter(
     (a) => a.teamId === member.id && a.date === dateStr && a.status !== 'cancelled'
