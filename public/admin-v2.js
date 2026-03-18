@@ -29,6 +29,7 @@ const state = {
     financeMemberId: 'all',
     financeAnchorDate: getLocalIsoDate(),
     financeChartRange: 'day',
+    currentAdminUser: null,
     serviceCategoryFilter: 'all',
     searchQuery: '',
     sidebarOpen: false,
@@ -782,10 +783,32 @@ function getLastDays(daysBack, selector) {
 function renderShellMeta() {
   const ownerId = String(state.data.settings.ownerId || '').trim();
   const users = Array.isArray(state.data.users) ? state.data.users : [];
+  const currentAdmin = state.ui.currentAdminUser || null;
+  const currentAdminUid = String(currentAdmin?.uid || '').trim();
   const ownerUser = users.find((user) => String(user?.uid || '').trim() === ownerId) || null;
-  const sidebarAdminName = String(ownerUser?.displayName || ownerId || 'Administrador').trim();
-  const sidebarAdminEmail = String(ownerUser?.email || 'Conta principal').trim();
-  const sidebarAdminPhoto = String(ownerUser?.photoUrl || '').trim();
+  const currentUserFromStore = users.find((user) => String(user?.uid || '').trim() === currentAdminUid) || null;
+  const adminEmailLocalPart = String(currentAdmin?.email || currentUserFromStore?.email || ownerUser?.email || '')
+    .split('@')[0]
+    .trim();
+  const sidebarAdminName = String(
+    currentAdmin?.displayName
+    || currentUserFromStore?.displayName
+    || ownerUser?.displayName
+    || adminEmailLocalPart
+    || 'Administrador'
+  ).trim();
+  const sidebarAdminEmail = String(
+    currentAdmin?.email
+    || currentUserFromStore?.email
+    || ownerUser?.email
+    || 'Conta principal'
+  ).trim();
+  const sidebarAdminPhoto = String(
+    currentAdmin?.photoUrl
+    || currentUserFromStore?.photoUrl
+    || ownerUser?.photoUrl
+    || ''
+  ).trim();
 
   document.getElementById('sidebarShopName').textContent = state.data.settings.barbershopName || 'Barbearia';
 
@@ -817,6 +840,38 @@ function renderShellMeta() {
   document.getElementById('notificationsCounter').textContent = compactNumber(notificationCount);
   document.getElementById('notificationsCounter').hidden = notificationCount <= 0;
   renderNotificationsPanel();
+}
+
+async function syncAuthSessionUser() {
+  if (!authState.enabled) return;
+  try {
+    await api('/api/auth/session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+  } catch (_error) {
+    // Falhas aqui nao devem impedir o painel de carregar.
+  }
+}
+
+async function loadCurrentAdminProfile() {
+  if (!authState.enabled) {
+    state.ui.currentAdminUser = null;
+    return;
+  }
+
+  try {
+    const profile = await api('/api/auth/profile');
+    state.ui.currentAdminUser = {
+      uid: String(profile?.uid || '').trim(),
+      displayName: String(profile?.displayName || '').trim(),
+      email: String(profile?.email || '').trim(),
+      photoUrl: String(profile?.photoUrl || '').trim()
+    };
+  } catch (_error) {
+    state.ui.currentAdminUser = null;
+  }
 }
 
 function renderSettingsForm() {
@@ -2347,6 +2402,8 @@ function wireActions() {
 
 async function startPanelAfterAuth() {
   if (authState.panelReady) return;
+  await syncAuthSessionUser();
+  await loadCurrentAdminProfile();
   await loadData();
   startAppointmentsPolling();
   authState.panelReady = true;
