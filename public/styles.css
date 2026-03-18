@@ -307,7 +307,7 @@ h2 {
 
 .most-booked-track {
   display: flex;
-  gap: 0;
+  gap: 10px;
   overflow-x: auto;
   scroll-behavior: smooth;
   scrollbar-width: none;
@@ -1980,7 +1980,7 @@ body[data-theme='dark'] .selected-summary {
   }
 
   .most-booked-track {
-    gap: 8px;
+    gap: 10px;
     scroll-snap-type: x mandatory;
     padding-bottom: 4px;
   }
