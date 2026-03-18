@@ -384,10 +384,15 @@ app.post('/api/auth/session', requireUserAuth, async (req, res) => {
   const incomingPhoto = String(req.body?.photoUrl || '').trim();
   const photoUrl = await normalizePhotoForStorage(incomingPhoto || user.picture || '', existingPhoto);
 
+  // Preserva displayName e phone já salvos pelo usuario; só usa o do token
+  // no primeiro login (quando ainda não há registro no store).
+  const existingDisplayName = idx >= 0 ? String(store.users[idx].displayName || '').trim() : '';
+  const existingPhone = idx >= 0 ? String(store.users[idx].phone || '') : '';
+
   const nextUser = {
     uid: user.uid,
     email: String(user.email || '').trim(),
-    displayName: String(user.name || req.body?.displayName || '').trim(),
+    displayName: existingDisplayName || String(user.name || req.body?.displayName || '').trim(),
     photoUrl,
     role: (settings.ownerId && settings.ownerId === user.uid)
       || (idx >= 0 && String(store.users[idx].role || '').trim().toLowerCase() === 'admin')
@@ -395,7 +400,7 @@ app.post('/api/auth/session', requireUserAuth, async (req, res) => {
       : 'user',
     createdAt: idx >= 0 ? store.users[idx].createdAt || now : now,
     lastLoginAt: now,
-    phone: idx >= 0 ? String(store.users[idx].phone || '') : ''
+    phone: existingPhone
   };
 
   if (idx >= 0) {

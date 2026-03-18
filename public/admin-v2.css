@@ -875,6 +875,7 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 16px;
+  min-height: 52px;
 }
 
 .metric-icon-box {
