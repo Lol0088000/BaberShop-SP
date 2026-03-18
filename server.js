@@ -535,6 +535,38 @@ app.get('/api/auth/appointments', requireUserAuth, async (req, res) => {
   return res.json({ appointments });
 });
 
+app.patch('/api/auth/appointments/:id/cancel', requireUserAuth, async (req, res) => {
+  const store = await readStore();
+  const user = req.authUser;
+  const saved = store.users.find((item) => item.uid === user.uid) || null;
+  const userEmail = String(user.email || '').trim().toLowerCase();
+  const userPhone = digitsOnly(saved?.phone || '');
+
+  const idx = store.appointments.findIndex((a) => a.id === req.params.id);
+  if (idx === -1) {
+    return res.status(404).json({ message: 'Agendamento nao encontrado.' });
+  }
+
+  const appt = store.appointments[idx];
+
+  // Verifica que o agendamento pertence ao usuario autenticado.
+  const ownsViaUid = String(appt.userUid || '').trim() === String(user.uid || '').trim();
+  const ownsViaEmail = userEmail && String(appt.clientEmail || appt.userEmail || '').trim().toLowerCase() === userEmail;
+  const ownsViaPhone = userPhone && digitsOnly(appt.clientPhone || '') === userPhone;
+  if (!ownsViaUid && !ownsViaEmail && !ownsViaPhone) {
+    return res.status(403).json({ message: 'Voce nao tem permissao para cancelar este agendamento.' });
+  }
+
+  if (appt.status === 'cancelled') {
+    return res.status(409).json({ message: 'Agendamento ja esta cancelado.' });
+  }
+
+  store.appointments[idx] = { ...appt, status: 'cancelled', cancelledAt: new Date().toISOString() };
+  await writeStore(store);
+
+  return res.json({ ok: true, id: appt.id, status: 'cancelled' });
+});
+
 function uid(prefix) {
   return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
 }

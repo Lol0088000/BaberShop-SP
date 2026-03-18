@@ -132,6 +132,38 @@ async function authFetch(url, options = {}) {
   return body;
 }
 
+function statusLabel(status) {
+  const map = { confirmed: 'Confirmado', cancelled: 'Cancelado', pending: 'Pendente', done: 'Concluído' };
+  return map[String(status || '')] || String(status || 'confirmed');
+}
+
+async function cancelAppointment(id, cardEl) {
+  if (!confirm('Deseja cancelar este agendamento?')) return;
+
+  const btn = cardEl.querySelector('.appt-cancel-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Cancelando...';
+  }
+
+  try {
+    await authFetch(`/api/auth/appointments/${id}/cancel`, { method: 'PATCH' });
+    const statusEl = cardEl.querySelector('.appt-status');
+    if (statusEl) {
+      statusEl.textContent = 'Cancelado';
+      statusEl.classList.add('appt-status--cancelled');
+    }
+    if (btn) btn.remove();
+    cardEl.classList.add('appointment-card--cancelled');
+  } catch (error) {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Cancelar agendamento';
+    }
+    setFeedback(error.message || 'Erro ao cancelar agendamento.', true);
+  }
+}
+
 function renderAppointments(items = []) {
   const root = document.getElementById('appointmentsList');
   if (!root) return;
@@ -143,18 +175,23 @@ function renderAppointments(items = []) {
   }
 
   items.forEach((appt) => {
+    const isCancelled = String(appt.status || '') === 'cancelled';
     const card = document.createElement('article');
-    card.className = 'appointment-card';
+    card.className = `appointment-card${isCancelled ? ' appointment-card--cancelled' : ''}`;
     card.innerHTML = `
       <div class="appointment-head">
         <strong>${appt.serviceName || 'Servico'}</strong>
         <span>${money(appt.servicePrice || 0)}</span>
       </div>
       <p><strong>Profissional:</strong> ${appt.teamName || 'Profissional'}</p>
-      <p><strong>Data:</strong> ${String(appt.date || '')} as ${String(appt.time || '')}</p>
-      <p><strong>Duracao:</strong> ${durationLabel(appt.serviceDuration || 0)}</p>
-      <p><strong>Status:</strong> ${appt.status || 'confirmed'}</p>
+      <p><strong>Data:</strong> ${String(appt.date || '')} às ${String(appt.time || '')}</p>
+      <p><strong>Duração:</strong> ${durationLabel(appt.serviceDuration || 0)}</p>
+      <p><strong>Status:</strong> <span class="appt-status${isCancelled ? ' appt-status--cancelled' : ''}">${statusLabel(appt.status)}</span></p>
+      ${!isCancelled ? `<div class="appt-actions"><button class="appt-cancel-btn" type="button">Cancelar agendamento</button></div>` : ''}
     `;
+    if (!isCancelled) {
+      card.querySelector('.appt-cancel-btn').addEventListener('click', () => cancelAppointment(appt.id, card));
+    }
     root.appendChild(card);
   });
 }
