@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Barbearia</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="site-body">
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand">
+          <span class="logo-mark" aria-hidden="true">BV</span>
+          <span id="brandName">Barbearia</span>
+        </div>
+        <div class="topbar-actions">
+          <div id="topbarUserInfo" class="topbar-user" hidden>
+            <img id="topbarUserAvatar" class="topbar-user-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Foto do usuario" />
+            <div class="topbar-user-meta">
+              <strong id="topbarUserName">Usuario</strong>
+              <span id="topbarUserEmail">email@exemplo.com</span>
+            </div>
+          </div>
+          <a id="loginLink" class="btn outline" href="/login.html">Login</a>
+          <a id="profileLink" class="btn outline profile-btn" href="/perfil.html" hidden>
+            <span class="profile-icon" aria-hidden="true"></span>
+            <span>Perfil</span>
+          </a>
+          <button id="themeToggleSite" class="btn outline theme-toggle" type="button">Modo escuro</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="hero" id="hero">
+        <div class="hero-media" aria-hidden="true">
+          <img id="heroImageBackdrop" class="hero-image hero-image-backdrop" alt="" hidden />
+          <img id="heroImage" class="hero-image hero-image-main" alt="" hidden />
+        </div>
+        <div class="hero-overlay">
+          <h1 id="heroTitle">Barbearia</h1>
+          <p id="heroTagline">Atendimento premium</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>Mais agendados</h2>
+        <div class="most-booked-shell">
+          <button id="mostPrev" class="carousel-arrow" type="button" aria-label="Ver anteriores">&#8249;</button>
+          <div id="mostBooked" class="most-booked-track"></div>
+          <button id="mostNext" class="carousel-arrow" type="button" aria-label="Ver próximos">&#8250;</button>
+        </div>
+      </section>
+
+      <section>
+        <h2>Todos os serviços</h2>
+        <div id="serviceGroups" class="accordion-list"></div>
+      </section>
+
+      <section>
+        <h2>Catálogo de cortes</h2>
+        <div id="catalogGrid" class="catalog-grid"></div>
+      </section>
+
+      <section>
+        <h2>Nossa equipe</h2>
+        <div id="team" class="team-grid"></div>
+      </section>
+
+      <section>
+        <div class="reviews-head">
+          <h2>Avaliações dos clientes</h2>
+          <button id="openReviewForm" class="btn outline" type="button">Adicionar observação</button>
+        </div>
+        <form id="reviewPublicForm" class="review-public-form" hidden>
+          <label>
+            Seu nome
+            <input id="reviewPublicAuthor" type="text" maxlength="80" placeholder="Ex: João" />
+          </label>
+          <label class="span-2">
+            Sua observação
+            <textarea id="reviewPublicComment" rows="3" maxlength="500" placeholder="Conte como foi seu atendimento" required></textarea>
+          </label>
+          <label>
+            Nota
+            <select id="reviewPublicRating">
+              <option value="5">5</option>
+              <option value="4">4</option>
+              <option value="3">3</option>
+              <option value="2">2</option>
+              <option value="1">1</option>
+            </select>
+          </label>
+          <div class="review-public-actions span-2">
+            <button class="btn" type="submit">Enviar observação</button>
+            <button id="cancelReviewForm" class="btn outline" type="button">Cancelar</button>
+          </div>
+        </form>
+        <p id="reviewPublicFeedback" class="muted"></p>
+        <div id="reviews" class="reviews"></div>
+      </section>
+
+      <section class="description">
+        <h2 id="descriptionTitle"></h2>
+        <p id="descriptionText"></p>
+        <p><strong>URL da barbearia:</strong> <span id="siteSlugUrl"></span></p>
+        <p><strong>Formas de pagamento:</strong> <span id="paymentMethods"></span></p>
+        <p><strong>Facilidades:</strong> <span id="facilities"></span></p>
+        <p><strong>Endereço:</strong> <span id="address"></span></p>
+        <p><strong>Telefone:</strong> <span id="phone"></span></p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="wrap">Site de barbearia com agendamento online.</div>
+    </footer>
+
+    <script src="/theme.js?v=2" defer></script>
+    <script src="/site.js" defer></script>
+  </body>
+</html>

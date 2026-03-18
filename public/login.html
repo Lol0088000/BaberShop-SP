@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | SP Barbearia</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="site-body">
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand">
+          <span class="logo-mark" aria-hidden="true">BV</span>
+          <span>SP Barbearia</span>
+        </div>
+        <div class="topbar-actions">
+          <a class="btn outline" href="/">Voltar ao site</a>
+          <button id="themeToggleSite" class="btn outline theme-toggle" type="button">Modo escuro</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="auth-wrap">
+      <section class="auth-layout">
+        <aside class="auth-side">
+          <h1>Conta SP Barbearia</h1>
+          <p class="auth-subtitle">Entre com seu email para salvar seu histórico, facilitar novos agendamentos e acessar o painel admin quando autorizado.</p>
+          <div class="auth-side-points">
+            <span>Histórico de agendamentos salvo</span>
+            <span>Acesso rápido ao próximo horário</span>
+            <span>Painel admin para conta autorizada</span>
+          </div>
+        </aside>
+
+        <section class="auth-card auth-form-card">
+          <div class="auth-mode-head">
+            <h2>Entrar ou criar conta</h2>
+            <p id="authModeHelper">Escolha o modo abaixo para entrar ou criar seu cadastro.</p>
+            <div class="auth-mode-switch" role="tablist" aria-label="Modo de autenticacao">
+              <button id="modeLoginButton" class="auth-mode-btn is-active" type="button" role="tab" aria-selected="true">Entrar</button>
+              <button id="modeRegisterButton" class="auth-mode-btn" type="button" role="tab" aria-selected="false">Criar conta</button>
+            </div>
+          </div>
+
+          <form id="authForm" class="auth-grid" autocomplete="on">
+            <label class="register-only" hidden>
+              Nome de usuario
+              <input id="authUsername" type="text" autocomplete="nickname" placeholder="Como voce quer aparecer" aria-label="Nome de usuario" />
+            </label>
+            <label>
+              Email
+              <input id="authEmail" type="email" autocomplete="username" required placeholder="voce@email.com" aria-label="Email" />
+            </label>
+            <label class="span-2">
+              Senha
+              <input id="authPassword" type="password" autocomplete="current-password" required placeholder="Sua senha" aria-label="Senha" />
+            </label>
+            <label class="span-2 login-only auth-remember" id="rememberLoginWrap">
+              <input id="rememberLogin" type="checkbox" checked aria-label="Salvar login" />
+              <span class="auth-remember-text">Salvar login neste dispositivo</span>
+            </label>
+            <label class="register-only" hidden>
+              Telefone
+              <input id="authPhone" type="tel" autocomplete="tel" placeholder="(11) 99999-9999" aria-label="Telefone" />
+            </label>
+            <label class="span-2 register-only" hidden>
+              Confirmar senha
+              <input id="authConfirmPassword" type="password" autocomplete="new-password" placeholder="Repita a senha para criar conta" aria-label="Confirmar senha" />
+            </label>
+
+            <div class="auth-actions span-2">
+              <button class="btn" type="submit" id="authSubmitButton">Entrar</button>
+            </div>
+
+            <div class="span-2 login-only" id="forgotPasswordWrap">
+              <button class="btn outline auth-forgot" type="button" id="forgotPasswordButton">Esqueci minha senha</button>
+            </div>
+
+            <div class="auth-google span-2">
+              <p class="auth-google-label">Ou continue com Google</p>
+              <div id="googleAuthButton" class="google-auth-button"></div>
+            </div>
+          </form>
+
+          <p class="auth-feedback" id="authFeedback"></p>
+        </section>
+      </section>
+    </main>
+
+    <script src="/theme.js?v=2" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js" defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="/login.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "barbearia-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "start:3030": "node scripts/start-3030.js",
+    "dev:3030": "node scripts/start-3030.js",
+    "make:hero": "node scripts/generate-hero-image.js",
+    "firebase:login": "firebase login",
+    "firebase:deploy": "firebase deploy --only functions,hosting",
+    "firebase:emulators": "firebase emulators:start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dayjs": "^1.11.20",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.7.0",
+    "firebase-functions": "^7.1.1",
+    "multer": "^2.1.1",
+    "sharp": "^0.34.5"
+  }
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meu Perfil | SP Barbearia</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="site-body">
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand">
+          <span class="logo-mark" aria-hidden="true">BV</span>
+          <span id="profileBrandName">SP Barbearia</span>
+        </div>
+        <div class="topbar-actions">
+          <a class="btn outline" href="/">Voltar ao site</a>
+          <button id="themeToggleSite" class="btn outline theme-toggle" type="button">Modo escuro</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap profile-page">
+      <section class="profile-card">
+        <div class="profile-head">
+          <img id="profileAvatar" class="profile-avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Foto do usuario" />
+          <div>
+            <h1>Meu perfil</h1>
+            <p class="muted">Atualize seus dados e acompanhe seus agendamentos.</p>
+          </div>
+        </div>
+
+        <form id="profileForm" class="profile-form">
+          <label>
+            Nome
+            <input id="profileName" type="text" placeholder="Seu nome" aria-label="Nome" />
+          </label>
+          <label>
+            Email
+            <input id="profileEmail" type="email" placeholder="voce@email.com" aria-label="Email" disabled />
+          </label>
+          <label>
+            Telefone
+            <input id="profilePhone" type="tel" placeholder="(11) 99999-9999" aria-label="Telefone" />
+          </label>
+          <div class="profile-form-actions">
+            <button class="btn" type="submit" id="profileSaveButton">Salvar dados</button>
+            <button class="btn outline" type="button" id="profileLogoutButton">Sair da conta</button>
+          </div>
+        </form>
+
+        <p id="profileFeedback" class="profile-feedback"></p>
+      </section>
+
+      <section class="profile-card">
+        <h2>Meus agendamentos</h2>
+        <div id="appointmentsList" class="profile-appointments"></div>
+      </section>
+    </main>
+
+    <script src="/theme.js?v=2" defer></script>
+    <script src="/perfil.js" defer></script>
+  </body>
+</html>

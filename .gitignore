@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Runtime artifacts
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.firebase/
+.tmp/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+
+# Optional local uploads/cache
+uploads/**
+!uploads/.gitkeep

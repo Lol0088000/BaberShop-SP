@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agendar</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="site-body sched-body">
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand">
+          <span class="logo-mark" aria-hidden="true">BV</span>
+          <span id="brandName">Barbearia</span>
+        </div>
+        <div class="topbar-actions">
+          <button id="themeToggleSched" class="btn outline theme-toggle" type="button">Modo escuro</button>
+          <a class="btn outline" href="/cliente">Voltar ao site</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap sched-wrap">
+
+      <!-- Card do servico selecionado -->
+      <div class="sched-service-card" id="serviceCard" style="display:none">
+        <div class="sched-service-info">
+          <span class="sched-service-label">Servico</span>
+          <strong id="serviceCardName">—</strong>
+        </div>
+        <div class="sched-service-price" id="serviceCardPrice">—</div>
+      </div>
+
+      <!-- Selecoes -->
+      <section class="booking-section">
+        <h2 class="section-title">Escolha o seu horario</h2>
+        <div class="booking-selects">
+          <label class="bk-label">
+            Servico
+            <select id="serviceSelect"></select>
+          </label>
+          <label class="bk-label">
+            Profissional
+            <select id="teamSelect"></select>
+          </label>
+          <label class="bk-label">
+            Data
+            <input type="date" id="dateInput" />
+          </label>
+        </div>
+
+        <div id="fullDayNotice" class="notice" style="display:none">
+          Agenda cheia para este profissional neste dia. Tente outro dia ou outro profissional.
+        </div>
+        <div id="slotsLoading" class="slots-loading" style="display:none">Carregando horarios...</div>
+        <div id="slotsError" class="notice notice-error" style="display:none"></div>
+
+        <div id="slotsBlock" style="display:none">
+          <h3 class="slots-title">Horarios disponíveis</h3>
+          <div id="slots" class="slots"></div>
+        </div>
+      </section>
+
+      <!-- Confirmacao -->
+      <section class="booking-section" id="confirmSection">
+        <h2 class="section-title">Finalizar agendamento</h2>
+        <div class="booking-selects">
+          <label class="bk-label">
+            Seu nome
+            <input id="clientName" type="text" placeholder="Ex: João Silva" />
+          </label>
+          <label class="bk-label">
+            Telefone / WhatsApp
+            <input id="clientPhone" type="tel" placeholder="(37) 99999-0000" />
+          </label>
+        </div>
+
+        <div id="selectedSummary" class="selected-summary" style="display:none"></div>
+
+        <button id="confirmBtn" class="btn btn-confirm" disabled>Confirmar agendamento</button>
+        <div id="feedback" class="feedback-msg" style="display:none"></div>
+      </section>
+
+    </main>
+
+    <script src="/theme.js?v=2" defer></script>
+    <script src="/agendar.js" defer></script>
+  </body>
+</html>

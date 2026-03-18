@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel da barbearia</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/admin-v2.css" />
+  </head>
+  <body class="admin-body admin-auth-locked">
+    <section class="admin-auth-gate" id="adminAuthGate" aria-live="polite">
+      <div class="admin-auth-card">
+        <h2>Login do Admin</h2>
+        <p>Entre com seu email e senha do Firebase Authentication para acessar o painel.</p>
+        <form id="adminLoginForm" class="admin-auth-form">
+          <label>Email
+            <input id="adminLoginEmail" type="email" autocomplete="username" required />
+          </label>
+          <label>Senha
+            <input id="adminLoginPassword" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-btn" type="submit" id="adminLoginButton">Entrar</button>
+        </form>
+        <p class="feedback" id="adminLoginFeedback"></p>
+      </div>
+    </section>
+
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="admin-topbar__left">
+          <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Abrir menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg>
+          </button>
+          <div class="admin-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg>
+            <input id="adminSearch" type="search" placeholder="Buscar cliente, serviço, barbeiro ou data" />
+          </div>
+        </div>
+
+        <div class="admin-topbar__right">
+          <div class="notification-wrap">
+            <button class="icon-btn" id="notificationsToggle" type="button" aria-label="Notificações" aria-expanded="false" aria-controls="notificationsPanel">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path><path d="M9 17a3 3 0 0 0 6 0"></path></svg>
+            </button>
+            <span class="notification-badge" id="notificationsCounter">0</span>
+            <div class="notifications-panel" id="notificationsPanel" hidden>
+              <div class="notifications-panel__head">
+                <strong>Agendamentos do dia</strong>
+                <span id="notificationsDateLabel"></span>
+              </div>
+              <div class="notifications-panel__list" id="notificationsList"></div>
+            </div>
+          </div>
+          <button id="themeToggleAdmin" class="ghost-btn theme-toggle" type="button">Modo claro</button>
+          <div class="admin-user-chip">
+            <span id="adminTopAvatar" class="admin-avatar">A</span>
+            <div>
+              <strong id="adminTopUserName">Administrador</strong>
+              <span id="adminTopUserEmail">conta@barbearia.com</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="mobile-overlay"></div>
+
+    <main class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="sidebar-brand">
+          <span class="sidebar-logo">BV</span>
+          <div>
+            <h1 id="sidebarShopName">Barbearia</h1>
+            <p>Plataforma de agendamentos</p>
+          </div>
+        </div>
+
+        <span class="sidebar-section-label">Painel</span>
+        <div class="nav-list">
+          <button class="nav-btn active" data-tab="dashboard" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 13h8V3H3z"></path><path d="M13 21h8V11h-8z"></path><path d="M13 3h8v4h-8z"></path><path d="M3 21h8v-6H3z"></path></svg>
+            <span>Dashboard</span>
+          </button>
+          <button class="nav-btn" data-tab="agenda" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Agenda</span>
+          </button>
+          <button class="nav-btn" data-tab="clients" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Clientes</span>
+          </button>
+          <button class="nav-btn" data-tab="barbers" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+            <span>Barbeiros</span>
+          </button>
+          <button class="nav-btn" data-tab="services" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20h16"></path><path d="M6 16l4-8 4 4 4-8"></path></svg>
+            <span>Serviços</span>
+          </button>
+        </div>
+
+        <span class="sidebar-section-label">Gestão</span>
+        <div class="nav-list">
+          <button class="nav-btn" data-tab="finance" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Financeiro</span>
+          </button>
+          <button class="nav-btn" data-tab="reports" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            <span>Relatórios</span>
+          </button>
+          <button class="nav-btn" data-tab="settings" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Configurações</span>
+          </button>
+        </div>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <span id="adminSidebarAvatar" class="sidebar-user__avatar">A</span>
+            <div>
+              <strong id="adminUserName">Administrador</strong>
+              <span id="adminUserMeta">Conta principal</span>
+            </div>
+          </div>
+          <button class="sidebar-logout" id="sidebarLogout" type="button">Sair</button>
+        </div>
+      </aside>
+
+      <section class="admin-main">
+        <div class="admin-hero">
+          <div class="admin-hero__copy">
+            <h2 class="admin-hero__brand">Barber Sp</h2>
+            <div class="hero-badges">
+              <span><strong id="heroBadgeDate">Hoje</strong> <span>visão operacional</span></span>
+              <span><strong>Filtros por perfil</strong> <span>barbeiro individual</span></span>
+              <span><strong>Analytics</strong> <span>dia, semana e mês</span></span>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="ghost-btn" id="agendaToday" type="button">Hoje</button>
+            <a class="primary-btn" href="/agendar.html">Abrir fluxo de agendamento</a>
+          </div>
+        </div>
+
+        <div class="admin-content-stack">
+          <section class="tab-panel" id="tab-dashboard">
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Visão geral do negócio</h2>
+                  <p>Métricas rápidas com foco no dia atual e leitura individual por perfil quando necessário.</p>
+                </div>
+              </div>
+              <div class="filter-row" id="dashboardMemberFilters"></div>
+              <div class="metric-grid" id="dashboardWidgets"></div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Desempenho dos barbeiros</h2>
+                  <p>Cards individuais com agenda ocupada, atendimentos e faturamento do dia selecionado.</p>
+                </div>
+              </div>
+              <div class="barber-grid" id="dashboardBarberGrid"></div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <div class="section-head">
+                <div>
+                  <h2>Atendimentos do dia</h2>
+                  <p>Agenda do dia atual em tempo real.</p>
+                </div>
+              </div>
+              <table class="table" id="dashboardUpcomingTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-agenda" hidden>
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Agenda por profissional</h2>
+                  <p>Selecione um dia e alterne entre os perfis da equipe para ver o faturamento individual.</p>
+                </div>
+                <div class="section-controls">
+                  <button class="date-nav" id="agendaPrevDay" type="button" aria-label="Dia anterior">&#8249;</button>
+                  <input class="date-field" id="agendaDate" type="date" />
+                  <button class="date-nav" id="agendaNextDay" type="button" aria-label="Próximo dia">&#8250;</button>
+                </div>
+              </div>
+              <p class="form-help" id="agendaDateLabel"></p>
+              <div class="filter-row" id="agendaMemberFilters"></div>
+              <div class="info-grid">
+                <article class="info-card"><span>Atendimentos</span><strong id="agendaStatAppointments">0</strong></article>
+                <article class="info-card"><span>Faturamento</span><strong id="agendaStatRevenue">R$ 0,00</strong></article>
+                <article class="info-card"><span>Clientes únicos</span><strong id="agendaStatClients">0</strong></article>
+                <article class="info-card"><span>Ticket médio</span><strong id="agendaStatAverage">R$ 0,00</strong></article>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Lucro individual por perfil</h2>
+                  <p>Troque o barbeiro nos filtros para ver o valor recebido de forma individual.</p>
+                </div>
+              </div>
+              <div class="barber-grid" id="agendaDayBarberGrid"></div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <div class="section-head">
+                <div>
+                  <h2>Tabela de agendamentos</h2>
+                  <p>Histórico filtrado por data, serviço e profissional.</p>
+                </div>
+              </div>
+              <table class="table" id="appointmentsTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-clients" hidden>
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Base de clientes</h2>
+                  <p>Lista derivada dos agendamentos para acompanhar recorrência, faturamento e profissional favorito.</p>
+                </div>
+              </div>
+              <div class="info-grid" id="clientsSummary"></div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <table class="table" id="clientsTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-barbers" hidden>
+            <div class="panel-card services-intro">
+              <div class="section-head services-intro__head">
+                <div>
+                  <h2>Cadastro da equipe</h2>
+                  <p>Cadastre perfis em uma janela flutuante e ajuste a escala no quadro de horários abaixo.</p>
+                </div>
+                <div class="section-controls">
+                  <button class="primary-btn" id="openTeamModal" type="button">Novo membro</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Horários por dia</h2>
+                  <p>Controle individual do expediente de cada profissional.</p>
+                </div>
+                <div class="section-controls">
+                  <label for="scheduleMemberSelect" class="form-help">Profissional</label>
+                  <select class="filter-field" id="scheduleMemberSelect"></select>
+                  <button class="ghost-btn" id="scheduleStepToggle" type="button">Sem horas vagas: ON</button>
+                  <button class="primary-btn" id="saveScheduleForMember" type="button">Salvar horários</button>
+                </div>
+              </div>
+              <p class="feedback" id="scheduleMemberFeedback"></p>
+              <table class="table" id="scheduleTable">
+                <thead>
+                  <tr><th>Dia</th><th>Ativo</th><th>Início</th><th>Fim</th></tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Perfis ativos</h2>
+                  <p>Visual rápido da equipe cadastrada.</p>
+                </div>
+              </div>
+              <div class="roster-grid" id="barberRosterGrid"></div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <table class="table" id="teamTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-services" hidden>
+            <div class="panel-card services-intro">
+              <div class="section-head services-intro__head">
+                <div>
+                  <h2>Catálogo de serviços</h2>
+                  <p>Cadastre serviços de forma rápida com duração, preço e categoria para facilitar o agendamento.</p>
+                </div>
+                <div class="section-controls">
+                  <button class="primary-btn" id="openServiceModal" type="button">Novo serviço</button>
+                </div>
+              </div>
+              <div class="services-intro__content">
+                <ul class="services-checklist" aria-label="Boas práticas para cadastro de serviços">
+                  <li>Use nomes curtos e claros para cada variação.</li>
+                  <li>Padronize categorias para manter relatórios limpos.</li>
+                  <li>Defina duração real para evitar conflitos na agenda.</li>
+                </ul>
+                <p class="form-help services-intro__tip">Use o botão <strong>Novo serviço</strong> para abrir a janela flutuante de criação.</p>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Variações cadastradas</h2>
+                  <p>Filtre por categoria para revisar duração e preço de cada variação.</p>
+                </div>
+                <div class="section-controls">
+                  <label for="serviceCategoryFilter" class="form-help">Categoria</label>
+                  <select class="filter-field" id="serviceCategoryFilter"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <table class="table" id="servicesTable"></table>
+            </div>
+          </section>
+
+          <section id="serviceModal" class="admin-modal" hidden>
+            <div class="admin-modal__backdrop" id="closeServiceModalBackdrop"></div>
+            <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
+              <div class="admin-modal__header">
+                <h3 id="serviceModalTitle">Novo serviço</h3>
+                <button id="closeServiceModal" class="icon-btn" type="button" aria-label="Fechar modal de serviço">&times;</button>
+              </div>
+
+              <form id="serviceForm" class="form-grid">
+                <input type="hidden" name="id" />
+                <label>Nome <input id="serviceNameInput" name="name" required aria-label="Nome do serviço" /></label>
+                <label>Preço (R$) <input name="price" type="number" min="0" step="0.01" required aria-label="Preço do serviço" /></label>
+                <label>Duração <input name="duration" type="text" placeholder="Ex: 30, 60 ou 1h30" required aria-label="Duração do serviço" /></label>
+                <label>
+                  Categoria
+                  <div class="service-category-row">
+                    <select id="serviceCategoryInput" name="category" required aria-label="Categoria do serviço"></select>
+                    <button id="addServiceCategory" class="ghost-btn service-category-add" type="button">+ Nova categoria</button>
+                  </div>
+                </label>
+                <label>Ativo
+                  <select name="active" aria-label="Serviço ativo">
+                    <option value="true">Sim</option>
+                    <option value="false">Não</option>
+                  </select>
+                </label>
+                <label class="span-4">Descrição <textarea name="description" rows="4" aria-label="Descrição do serviço"></textarea></label>
+              </form>
+              <p class="form-help">Repita a mesma categoria quantas vezes quiser. Cada variação pode ter valor e duração diferentes.</p>
+              <div class="section-controls">
+                <button class="primary-btn" id="saveService" type="button">Salvar serviço</button>
+                <button class="ghost-btn" id="clearService" type="button">Limpar</button>
+                <button class="ghost-btn" id="cancelServiceModal" type="button">Cancelar</button>
+              </div>
+              <p class="feedback" id="serviceFeedback"></p>
+            </div>
+          </section>
+
+          <section id="categoryDialog" class="admin-modal" hidden>
+            <div class="admin-modal__backdrop" id="closeCategoryDialogBackdrop"></div>
+            <div class="admin-modal__dialog category-dialog" role="dialog" aria-modal="true" aria-labelledby="categoryDialogTitle">
+              <div class="admin-modal__header">
+                <h3 id="categoryDialogTitle">Nova categoria</h3>
+                <button id="closeCategoryDialog" class="icon-btn" type="button" aria-label="Fechar modal de categoria">&times;</button>
+              </div>
+              <p class="form-help">Crie uma categoria para organizar os serviços no catálogo.</p>
+              <form id="categoryDialogForm" class="category-dialog__body">
+                <label>
+                  Nome da categoria
+                  <input id="newCategoryInput" type="text" placeholder="Ex: Cabelo, Barba, Pacotes" maxlength="60" required aria-label="Nome da nova categoria" />
+                </label>
+                <div class="section-controls">
+                  <button class="primary-btn" id="saveCategoryDialog" type="submit">Salvar categoria</button>
+                  <button class="ghost-btn" id="cancelCategoryDialog" type="button">Cancelar</button>
+                </div>
+              </form>
+              <p class="feedback" id="categoryDialogFeedback"></p>
+            </div>
+          </section>
+
+          <section id="teamModal" class="admin-modal" hidden>
+            <div class="admin-modal__backdrop" id="closeTeamModalBackdrop"></div>
+            <div class="admin-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="teamModalTitle">
+              <div class="admin-modal__header">
+                <h3 id="teamModalTitle">Novo membro</h3>
+                <button id="closeTeamModal" class="icon-btn" type="button" aria-label="Fechar modal de membro">&times;</button>
+              </div>
+
+              <form id="teamForm" class="form-grid">
+                <input type="hidden" name="id" />
+                <label>Nome <input id="teamNameInput" name="name" required /></label>
+                <label>Cargo <input name="role" value="Barbeiro(a)" /></label>
+                <label>Likes <input name="likes" type="number" min="0" /></label>
+                <label>Capacidade por horário <input name="capacityPerSlot" type="number" min="1" max="1" value="1" /></label>
+                <label>WhatsApp <input name="whatsapp" /></label>
+                <label>Instagram <input name="instagram" /></label>
+                <label class="span-4">Bio <textarea name="bio" rows="4"></textarea></label>
+                <label class="span-4">Foto do membro <input id="teamPhotoUpload" type="file" accept="image/*" /></label>
+              </form>
+
+              <p class="form-help">A escala de horários é configurada no quadro Horários por dia desta aba.</p>
+              <div class="section-controls">
+                <button class="primary-btn" id="saveTeam" type="button">Salvar barbeiro</button>
+                <button class="ghost-btn" id="clearTeam" type="button">Limpar</button>
+                <button class="ghost-btn" id="cancelTeamModal" type="button">Cancelar</button>
+              </div>
+              <p class="feedback" id="teamFeedback"></p>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-reviews" hidden>
+            <div class="split-layout">
+              <div class="panel-card">
+                <div class="section-head">
+                  <div>
+                    <h2>Nova avaliação</h2>
+                    <p>Cadastre depoimentos para fortalecer a prova social.</p>
+                  </div>
+                </div>
+                <form id="reviewForm" class="form-grid">
+                  <label>Nome do cliente <input name="author" required /></label>
+                  <label>Nota <input name="rating" type="number" min="1" max="5" required /></label>
+                  <label>Data <input name="date" type="date" /></label>
+                  <label class="span-4">Comentário <textarea name="comment" rows="4"></textarea></label>
+                </form>
+                <div class="section-controls" style="margin-top: 16px">
+                  <button class="primary-btn" id="saveReview" type="button">Salvar avaliação</button>
+                </div>
+                <p class="feedback" id="reviewFeedback"></p>
+              </div>
+
+              <div class="panel-card">
+                <div class="section-head">
+                  <div>
+                    <h2>Qualidade percebida</h2>
+                    <p>As avaliações entram direto na vitrine pública da barbearia.</p>
+                  </div>
+                </div>
+                <div class="info-grid">
+                  <article class="info-card"><span>Total de avaliações</span><strong id="reviewsTotalCard">Atualização automática</strong></article>
+                  <article class="info-card"><span>Uso recomendado</span><strong>Prova social</strong><small>Exiba notas e comentários reais</small></article>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <table class="table" id="reviewsTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-finance" hidden>
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Análise financeira</h2>
+                  <p>Faturamento diário, semanal e mensal com leitura individual por membro da equipe.</p>
+                </div>
+                <div class="section-controls">
+                  <input class="date-field" id="financeAnchorDate" type="date" />
+                </div>
+              </div>
+              <div class="filter-row" id="financeMemberFilters"></div>
+              <div class="info-grid">
+                <article class="info-card"><span>Receita do dia</span><strong id="financeDayRevenue">R$ 0,00</strong><small id="financeDayMeta"></small></article>
+                <article class="info-card"><span>Receita da semana</span><strong id="financeWeekRevenue">R$ 0,00</strong><small id="financeWeekMeta"></small></article>
+                <article class="info-card"><span>Receita do mês</span><strong id="financeMonthRevenue">R$ 0,00</strong><small id="financeMonthMeta"></small></article>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Lucro diário animado</h2>
+                  <p>Leitura por dia do período selecionado. O gráfico anima automaticamente quando novos valores entram.</p>
+                </div>
+                <div class="filter-row" id="financeChartRangeFilters">
+                  <button class="chip active" type="button" data-finance-range="day">Dia</button>
+                  <button class="chip" type="button" data-finance-range="week">Semana</button>
+                  <button class="chip" type="button" data-finance-range="month">Mês</button>
+                </div>
+              </div>
+              <div class="profit-chart-summary">
+                <article class="info-card">
+                  <span>Lucro total no período</span>
+                  <strong id="financeProfitTotal">R$ 0,00</strong>
+                  <small id="financeProfitMeta">Sem movimentação no período selecionado.</small>
+                </article>
+                <article class="info-card">
+                  <span>Maior dia de lucro</span>
+                  <strong id="financeProfitBestDay">-</strong>
+                  <small id="financeProfitBestMeta">Sem dados.</small>
+                </article>
+                <article class="info-card">
+                  <span>Variação vs período anterior</span>
+                  <strong id="financeProfitDelta" class="profit-delta profit-delta--flat">0,0%</strong>
+                  <small id="financeProfitDeltaMeta">Aguardando dados comparativos.</small>
+                </article>
+              </div>
+              <div class="profit-chart" id="financeProfitChart"></div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Faturamento por barbeiro</h2>
+                  <p>Comparativo individual do período ancorado na data selecionada.</p>
+                </div>
+              </div>
+              <div class="finance-team-grid" id="financeTeamBreakdown"></div>
+            </div>
+
+            <div class="panel-card table-wrap">
+              <div class="section-head">
+                <div>
+                  <h2>Histórico financeiro do mês</h2>
+                  <p>Lista completa das receitas do período selecionado.</p>
+                </div>
+              </div>
+              <table class="table" id="financeHistoryTable"></table>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-reports" hidden>
+            <div class="settings-grid">
+              <div class="panel-card">
+                <div class="section-head">
+                  <div>
+                    <h2>Top serviços</h2>
+                    <p>Ranking do mês com base em quantidade de atendimentos.</p>
+                  </div>
+                </div>
+                <div id="reportServiceRanking"></div>
+              </div>
+
+              <div class="panel-card">
+                <div class="section-head">
+                  <div>
+                    <h2>Receita por categoria</h2>
+                    <p>Entenda quais frentes de serviço mais faturam.</p>
+                  </div>
+                </div>
+                <div id="reportCategoryRanking"></div>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Faturamento diário do período</h2>
+                  <p>Leitura rápida dos últimos dias com receita registrada.</p>
+                </div>
+              </div>
+              <div id="reportDailyBars"></div>
+            </div>
+          </section>
+
+          <section class="tab-panel" id="tab-settings" hidden>
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Configurações gerais</h2>
+                  <p>Identidade da barbearia, plano, URL e apresentação pública.</p>
+                </div>
+              </div>
+              <form id="settingsForm" class="form-grid">
+                <label>Nome da barbearia <input name="barbershopName" required /></label>
+                <label>Slug da URL <input name="slug" placeholder="barbearia-vegas" /></label>
+                <label>Plano
+                  <select name="plan">
+                    <option value="basic">Basic</option>
+                    <option value="pro">Pro</option>
+                  </select>
+                </label>
+                <label>Owner ID <input name="ownerId" /></label>
+                <label>Telefone <input name="phone" /></label>
+                <label>Endereço <input name="address" /></label>
+                <label>Slogan <input name="tagline" /></label>
+                <label>Título da descrição <input name="descriptionTitle" /></label>
+                <label class="span-2">Formas de pagamento <input name="paymentMethods" /></label>
+                <label class="span-2">Facilidades <input name="facilities" /></label>
+                <label class="span-4">Descrição <textarea name="descriptionText" rows="4"></textarea></label>
+                <label class="span-4">Foto principal do estabelecimento <input id="heroUpload" type="file" accept="image/*" /></label>
+              </form>
+              <div class="section-controls" style="margin-top: 16px">
+                <button class="primary-btn" id="saveSettings" type="button">Salvar configurações</button>
+              </div>
+              <p class="feedback" id="settingsFeedback"></p>
+            </div>
+
+            <div class="split-layout">
+              <div class="panel-card settings-showcase-card settings-showcase-card--highlights">
+                <div class="section-head">
+                  <div>
+                    <h2>Destaques do topo</h2>
+                    <p>Itens mostrados na seção “Mais agendados”.</p>
+                  </div>
+                </div>
+                <form id="mostBookedForm" class="form-grid">
+                  <input type="hidden" name="id" />
+                  <label>Serviço
+                    <select name="serviceId" id="mostBookedServiceSelect"></select>
+                  </label>
+                  <label>Título do card <input name="label" required /></label>
+                  <label>Subtítulo <input name="subtitle" /></label>
+                  <label>Posição <input name="position" type="number" min="1" /></label>
+                </form>
+                <div class="section-controls settings-showcase-actions">
+                  <button class="primary-btn" id="saveMostBooked" type="button">Salvar destaque</button>
+                  <button class="ghost-btn" id="clearMostBooked" type="button">Limpar</button>
+                </div>
+                <p class="feedback" id="mostBookedFeedback"></p>
+                <div class="table-wrap settings-showcase-table-wrap">
+                  <table class="table" id="mostBookedTable"></table>
+                </div>
+              </div>
+
+              <div class="panel-card settings-showcase-card settings-showcase-card--catalog">
+                <div class="section-head">
+                  <div>
+                    <h2>Catálogo de cortes</h2>
+                    <p>Gerencie a galeria pública exibida no site.</p>
+                  </div>
+                </div>
+                <form id="catalogForm" class="form-grid">
+                  <input type="hidden" name="id" />
+                  <label>Título do corte <input name="title" required /></label>
+                  <label>Descrição curta <input name="subtitle" /></label>
+                  <label>Posição <input name="position" type="number" min="1" /></label>
+                  <label class="span-4">Foto do corte <input id="catalogUpload" type="file" accept="image/*" /></label>
+                </form>
+                <div class="section-controls settings-showcase-actions">
+                  <button class="primary-btn" id="saveCatalog" type="button">Salvar item</button>
+                  <button class="ghost-btn" id="clearCatalog" type="button">Limpar</button>
+                </div>
+                <p class="feedback" id="catalogFeedback"></p>
+                <div class="table-wrap settings-showcase-table-wrap">
+                  <table class="table" id="catalogTable"></table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="/theme.js?v=2" defer></script>
+    <script src="/admin-v2.js" defer></script>
+  </body>
+</html>
