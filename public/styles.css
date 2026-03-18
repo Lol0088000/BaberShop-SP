@@ -2331,6 +2331,57 @@ body.site-body[data-theme='light'] .service-info h3 {
 }
 
 @media (max-width: 820px) {
+  .site-body .topbar-inner {
+    min-height: auto;
+    padding: 10px 0;
+    gap: 10px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .site-body .brand {
+    min-width: 0;
+    font-size: 1.1rem;
+    gap: 10px;
+  }
+
+  .site-body .topbar-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .site-body .topbar-user {
+    margin-right: 0;
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  .site-body .topbar-user-meta {
+    text-align: left;
+    min-width: 0;
+  }
+
+  .site-body .topbar-user strong,
+  .site-body .topbar-user span {
+    display: block;
+    max-width: min(70vw, 260px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .site-body .most-booked-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .site-body .most-booked-track {
+    width: 100%;
+  }
+
   .site-body section {
     padding: 18px;
     border-radius: 18px;
@@ -2348,6 +2399,21 @@ body.site-body[data-theme='light'] .service-info h3 {
   .site-body .team-grid,
   .site-body .catalog-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .site-body .topbar-user-meta span {
+    display: none;
+  }
+
+  .site-body .topbar-actions {
+    justify-content: flex-start;
+  }
+
+  .site-body .topbar-actions .btn.outline {
+    padding: 8px 10px;
+    font-size: 0.82rem;
   }
 }
 

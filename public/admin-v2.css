@@ -1891,22 +1891,48 @@
 @media (max-width: 840px) {
   .admin-body .topbar-inner,
   .admin-layout {
-    width: min(100vw - 20px, 100%);
+    width: min(calc(100vw - 20px), 100%);
   }
 
   .admin-body .topbar-inner {
     flex-wrap: wrap;
     padding: 10px 0;
+    gap: 10px;
+  }
+
+  .admin-topbar__left {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
   }
 
   .admin-topbar__left,
   .admin-topbar__right {
     width: 100%;
-    justify-content: space-between;
+  }
+
+  .admin-topbar__right {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .admin-search {
     width: 100%;
+    min-width: 0;
+  }
+
+  .admin-user-chip {
+    max-width: min(100%, 220px);
+  }
+
+  .admin-user-chip strong,
+  .admin-user-chip span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .admin-hero {
@@ -2072,6 +2098,11 @@
 }
 
 @media (max-width: 640px) {
+  .admin-body .topbar-inner,
+  .admin-layout {
+    width: min(calc(100vw - 14px), 100%);
+  }
+
   .admin-user-chip div {
     display: none;
   }
