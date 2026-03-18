@@ -836,6 +836,12 @@
   overflow: hidden;
   padding: 18px;
   border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-card .sparkline {
+  margin-top: auto;
 }
 
 .metric-card:hover,
@@ -876,7 +882,7 @@
 }
 
 .metric-title {
-  margin: 8px 0 10px;
+  margin: 8px 0 0;
   color: var(--admin-muted);
   font-size: 0.84rem;
 }
