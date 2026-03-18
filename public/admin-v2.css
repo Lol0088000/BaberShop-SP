@@ -152,6 +152,7 @@
 .chip,
 .table-action,
 .ghost-btn,
+.sidebar-action,
 .sidebar-logout,
 .date-nav,
 .mobile-overlay {
@@ -163,6 +164,7 @@
 .date-nav,
 .ghost-btn,
 .table-action,
+.sidebar-action,
 .sidebar-logout,
 .chip,
 .metric-card,
@@ -181,6 +183,7 @@
 .date-nav,
 .ghost-btn,
 .table-action,
+.sidebar-action,
 .sidebar-logout {
   border: 1px solid var(--admin-border);
   background: rgba(15, 23, 42, 0.86);
@@ -374,6 +377,7 @@
 .admin-body[data-theme='light'] .date-nav,
 .admin-body[data-theme='light'] .ghost-btn,
 .admin-body[data-theme='light'] .table-action,
+.admin-body[data-theme='light'] .sidebar-action,
 .admin-body[data-theme='light'] .sidebar-logout,
 .admin-body[data-theme='light'] .date-field,
 .admin-body[data-theme='light'] .filter-field,
@@ -477,6 +481,10 @@
 
 #categoryDialog .admin-modal__dialog {
   width: min(520px, calc(100vw - 32px));
+}
+
+#adminUserModal .admin-modal__dialog {
+  width: min(540px, calc(100vw - 32px));
 }
 
 .category-dialog {
@@ -655,6 +663,25 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+}
+
+.sidebar-action {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-style: dashed;
+  border-color: rgba(129, 140, 248, 0.55);
+  color: #dbeafe;
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.sidebar-action:hover {
+  background: rgba(37, 99, 235, 0.24);
+  border-color: rgba(129, 140, 248, 0.8);
 }
 
 .admin-main {

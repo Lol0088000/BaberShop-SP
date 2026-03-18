@@ -882,11 +882,62 @@ function closeCategoryDialog() {
 }
 
 function isAnyAdminModalOpen() {
-  const modalIds = ['serviceModal', 'teamModal', 'categoryDialog'];
+  const modalIds = ['serviceModal', 'teamModal', 'categoryDialog', 'adminUserModal'];
   return modalIds.some((id) => {
     const node = document.getElementById(id);
     return node && !node.hidden;
   });
+}
+
+function openAdminUserModal() {
+  const modal = document.getElementById('adminUserModal');
+  const form = document.getElementById('adminUserForm');
+  if (!modal) return;
+
+  if (form) form.reset();
+  setFeedback('adminUserFeedback', '');
+  modal.hidden = false;
+  document.body.classList.add('admin-modal-open');
+
+  const firstInput = document.getElementById('adminUserEmail');
+  if (firstInput) {
+    setTimeout(() => firstInput.focus(), 0);
+  }
+}
+
+function closeAdminUserModal() {
+  const modal = document.getElementById('adminUserModal');
+  if (!modal) return;
+  modal.hidden = true;
+  if (!isAnyAdminModalOpen()) {
+    document.body.classList.remove('admin-modal-open');
+  }
+}
+
+async function saveAdminUser() {
+  try {
+    const form = document.getElementById('adminUserForm');
+    if (!form) return;
+    const data = formToJson(form);
+    const email = String(data.email || '').trim().toLowerCase();
+
+    if (!email) {
+      setFeedback('adminUserFeedback', 'Informe o email do usuario.', true);
+      return;
+    }
+
+    const created = await api('/api/admin/users/grant-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    const userName = created?.user?.displayName || created?.user?.email || email;
+    setFeedback('adminUserFeedback', `Administrador liberado: ${userName}`);
+    await loadData();
+  } catch (error) {
+    setFeedback('adminUserFeedback', `Erro ao adicionar administrador: ${error.message}`, true);
+  }
 }
 
 function saveCategoryFromDialog() {
@@ -1993,6 +2044,7 @@ function wireActions() {
     setFeedback('serviceFeedback', '');
     openServiceModal(false);
   });
+  document.getElementById('openAdminUserModal')?.addEventListener('click', openAdminUserModal);
   document.getElementById('openTeamModal').addEventListener('click', () => {
     clearTeamForm();
     setFeedback('teamFeedback', '');
@@ -2008,6 +2060,13 @@ function wireActions() {
     event.preventDefault();
     saveCategoryFromDialog();
   });
+  document.getElementById('closeAdminUserModal')?.addEventListener('click', closeAdminUserModal);
+  document.getElementById('cancelAdminUserModal')?.addEventListener('click', closeAdminUserModal);
+  document.getElementById('closeAdminUserModalBackdrop')?.addEventListener('click', closeAdminUserModal);
+  document.getElementById('adminUserForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await saveAdminUser();
+  });
   document.getElementById('closeTeamModal').addEventListener('click', closeTeamModal);
   document.getElementById('cancelTeamModal').addEventListener('click', closeTeamModal);
   document.getElementById('closeTeamModalBackdrop').addEventListener('click', closeTeamModal);
@@ -2016,7 +2075,12 @@ function wireActions() {
     const serviceModal = document.getElementById('serviceModal');
     const teamModal = document.getElementById('teamModal');
     const categoryDialog = document.getElementById('categoryDialog');
+    const adminUserModal = document.getElementById('adminUserModal');
     closeNotificationsPanel();
+    if (adminUserModal && !adminUserModal.hidden) {
+      closeAdminUserModal();
+      return;
+    }
     if (categoryDialog && !categoryDialog.hidden) {
       closeCategoryDialog();
       return;

@@ -123,6 +123,7 @@
               <span id="adminUserMeta">Conta principal</span>
             </div>
           </div>
+          <button class="sidebar-action" id="openAdminUserModal" type="button">+ Adicionar administrador</button>
           <button class="sidebar-logout" id="sidebarLogout" type="button">Sair</button>
         </div>
       </aside>
@@ -383,6 +384,26 @@
                 </div>
               </form>
               <p class="feedback" id="categoryDialogFeedback"></p>
+            </div>
+          </section>
+
+          <section id="adminUserModal" class="admin-modal" hidden>
+            <div class="admin-modal__backdrop" id="closeAdminUserModalBackdrop"></div>
+            <div class="admin-modal__dialog admin-user-modal" role="dialog" aria-modal="true" aria-labelledby="adminUserModalTitle">
+              <div class="admin-modal__header">
+                <h3 id="adminUserModalTitle">Adicionar administrador</h3>
+                <button id="closeAdminUserModal" class="icon-btn" type="button" aria-label="Fechar modal de administrador">&times;</button>
+              </div>
+              <form id="adminUserForm" class="form-grid">
+                <label class="span-4">Email do usuario
+                  <input id="adminUserEmail" name="email" type="email" autocomplete="email" placeholder="email@dominio.com" required aria-label="Email do novo administrador" />
+                </label>
+                <div class="section-controls span-4">
+                  <button class="primary-btn" id="saveAdminUser" type="submit">Adicionar admin</button>
+                  <button class="ghost-btn" id="cancelAdminUserModal" type="button">Cancelar</button>
+                </div>
+              </form>
+              <p class="feedback" id="adminUserFeedback"></p>
             </div>
           </section>
 

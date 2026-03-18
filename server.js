@@ -316,7 +316,9 @@ async function requireAdminAuth(req, res, next) {
 
     const store = await readStore();
     const ownerId = String(store.settings?.ownerId || '').trim();
-    if (ownerId && ownerId !== decoded.uid) {
+    const savedUser = (store.users || []).find((item) => String(item.uid || '').trim() === String(decoded.uid || '').trim()) || null;
+    const hasAdminRole = String(savedUser?.role || '').trim().toLowerCase() === 'admin';
+    if (ownerId && ownerId !== decoded.uid && !hasAdminRole) {
       return res.status(403).json({ message: 'Usuario sem permissao para este painel.' });
     }
 
@@ -361,7 +363,10 @@ app.post('/api/auth/session', requireUserAuth, async (req, res) => {
     email: String(user.email || '').trim(),
     displayName: String(user.name || req.body?.displayName || '').trim(),
     photoUrl,
-    role: settings.ownerId && settings.ownerId === user.uid ? 'admin' : 'user',
+    role: (settings.ownerId && settings.ownerId === user.uid)
+      || (idx >= 0 && String(store.users[idx].role || '').trim().toLowerCase() === 'admin')
+      ? 'admin'
+      : 'user',
     createdAt: idx >= 0 ? store.users[idx].createdAt || now : now,
     lastLoginAt: now,
     phone: idx >= 0 ? String(store.users[idx].phone || '') : ''
@@ -394,9 +399,15 @@ app.get('/api/auth/profile', requireUserAuth, async (req, res) => {
     displayName: saved?.displayName || String(user.name || ''),
     photoUrl: String(saved?.photoUrl || user.picture || ''),
     phone: String(saved?.phone || ''),
-    isAdmin: settings.ownerId ? settings.ownerId === user.uid : false
+    isAdmin: settings.ownerId
+      ? settings.ownerId === user.uid || String(saved?.role || '').trim().toLowerCase() === 'admin'
+      : String(saved?.role || '').trim().toLowerCase() === 'admin'
   });
 });
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
+}
 
 app.put('/api/auth/profile', requireUserAuth, async (req, res) => {
   const store = await readStore();
@@ -658,6 +669,44 @@ app.put('/api/admin/settings', async (req, res) => {
   store.settings = normalizeSettings({ ...store.settings, ...req.body });
   await writeStore(store);
   res.json(store.settings);
+});
+
+app.post('/api/admin/users/grant-admin', async (req, res) => {
+  const email = String(req.body?.email || '').trim().toLowerCase();
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ message: 'Informe um email valido.' });
+  }
+
+  const store = await readStore();
+  const ownerId = String(store.settings?.ownerId || '').trim();
+  if (FIREBASE_AUTH_ENABLED && ownerId && String(req.authUser?.uid || '').trim() !== ownerId) {
+    return res.status(403).json({ message: 'Somente o dono pode adicionar novos administradores.' });
+  }
+
+  const idx = (store.users || []).findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
+  if (idx === -1) {
+    return res.status(404).json({ message: 'Usuario nao encontrado. Peca para esse email fazer login pelo menos uma vez.' });
+  }
+
+  const current = store.users[idx] || {};
+  const updated = {
+    ...current,
+    email: String(current.email || email).trim(),
+    role: 'admin'
+  };
+
+  store.users[idx] = updated;
+  await writeStore(store);
+
+  return res.json({
+    ok: true,
+    user: {
+      uid: updated.uid,
+      email: updated.email,
+      displayName: updated.displayName || '',
+      role: updated.role
+    }
+  });
 });
 
 app.post('/api/admin/services', async (req, res) => {
