@@ -2375,11 +2375,26 @@ body.site-body[data-theme='light'] .service-info h3 {
   }
 
   .site-body .most-booked-shell {
-    grid-template-columns: 1fr;
+    grid-template-columns: 30px 1fr 30px;
+    gap: 8px;
   }
 
   .site-body .most-booked-track {
     width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 6px;
+  }
+
+  .site-body .carousel-arrow {
+    display: inline-flex;
+    width: 30px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
   }
 
   .site-body section {
