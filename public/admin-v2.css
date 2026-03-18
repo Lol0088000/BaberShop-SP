@@ -98,6 +98,51 @@
   margin-top: 6px;
 }
 
+.admin-auth-divider {
+  margin: 14px 0 10px;
+  text-align: center;
+  color: var(--admin-muted);
+  font-size: 0.82rem;
+  position: relative;
+}
+
+.admin-auth-divider::before,
+.admin-auth-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc(50% - 18px);
+  height: 1px;
+  background: var(--admin-border);
+}
+
+.admin-auth-divider::before {
+  left: 0;
+}
+
+.admin-auth-divider::after {
+  right: 0;
+}
+
+.admin-auth-google {
+  display: grid;
+}
+
+.admin-google-btn {
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+
+.admin-google-btn__icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: conic-gradient(from 45deg, #ea4335 0 25%, #fbbc05 25% 50%, #34a853 50% 75%, #4285f4 75% 100%);
+}
+
 .admin-body.admin-auth-locked .admin-auth-gate {
   display: flex;
 }

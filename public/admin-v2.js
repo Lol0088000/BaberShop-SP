@@ -42,6 +42,7 @@ const AUTH_STORAGE_KEY = 'adminFirebaseSession';
 const authState = {
   enabled: false,
   apiKey: '',
+  googleClientId: '',
   idToken: '',
   refreshToken: '',
   expiresAt: 0,
@@ -240,6 +241,7 @@ async function fetchFirebaseConfig() {
   const config = await response.json().catch(() => ({}));
   authState.enabled = Boolean(config.authEnabled && config.apiKey);
   authState.apiKey = String(config.apiKey || '');
+  authState.googleClientId = String(config.googleClientId || '');
 }
 
 async function signInWithFirebase(email, password) {
@@ -256,6 +258,33 @@ async function signInWithFirebase(email, password) {
   if (!response.ok) {
     const message = body?.error?.message || 'Falha ao autenticar no Firebase.';
     throw new Error(message.replace(/_/g, ' '));
+  }
+
+  authState.idToken = String(body.idToken || '');
+  authState.refreshToken = String(body.refreshToken || '');
+  authState.expiresAt = Date.now() + Number(body.expiresIn || 3600) * 1000;
+  saveAuthSession();
+}
+
+async function signInWithGoogleCredential(googleIdToken) {
+  const response = await fetch(
+    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithIdp?key=${authState.apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        postBody: `id_token=${encodeURIComponent(googleIdToken)}&providerId=google.com`,
+        requestUri: `${window.location.origin}/admin.html`,
+        returnSecureToken: true,
+        returnIdpCredential: true
+      })
+    }
+  );
+
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = body?.error?.message || 'Falha no login com Google.';
+    throw new Error(String(message).replace(/_/g, ' '));
   }
 
   authState.idToken = String(body.idToken || '');
@@ -2424,6 +2453,7 @@ async function startPanelAfterAuth() {
 
 function wireAuthActions() {
   const loginForm = document.getElementById('adminLoginForm');
+  const googleButton = document.getElementById('adminGoogleLoginButton');
   if (!loginForm) return;
 
   loginForm.addEventListener('submit', async (event) => {
@@ -2450,6 +2480,52 @@ function wireAuthActions() {
       setAuthFeedback(`Falha no login: ${error.message}`, true);
     } finally {
       if (button) button.disabled = false;
+    }
+  });
+
+  if (!googleButton) return;
+
+  googleButton.addEventListener('click', async () => {
+    if (!authState.enabled) return;
+    if (!authState.googleClientId) {
+      setAuthFeedback('Google nao configurado no Firebase.', true);
+      return;
+    }
+    if (!window.google?.accounts?.id) {
+      setAuthFeedback('Google ainda carregando. Tente novamente em alguns segundos.', true);
+      return;
+    }
+
+    try {
+      googleButton.disabled = true;
+      setAuthFeedback('Entrando com Google...');
+
+      const credential = await new Promise((resolve, reject) => {
+        window.google.accounts.id.initialize({
+          client_id: authState.googleClientId,
+          callback: (response) => {
+            if (!response?.credential) {
+              reject(new Error('Resposta do Google invalida.'));
+              return;
+            }
+            resolve(response.credential);
+          }
+        });
+        window.google.accounts.id.prompt((notification) => {
+          if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
+            reject(new Error('Nao foi possivel abrir o login Google neste navegador.'));
+          }
+        });
+      });
+
+      await signInWithGoogleCredential(credential);
+      unlockAdminUi();
+      setAuthFeedback('');
+      await startPanelAfterAuth();
+    } catch (error) {
+      setAuthFeedback(`Erro no Google: ${error.message}`, true);
+    } finally {
+      googleButton.disabled = false;
     }
   });
 }
