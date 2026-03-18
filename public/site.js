@@ -231,7 +231,15 @@ function renderMostBooked(items, services) {
 
   if (!prev || !next) return;
 
-  const step = 176;
+  const getStep = () => {
+    const firstSlide = track.querySelector('.most-booked-slide');
+    const slideWidth = Math.round(firstSlide?.getBoundingClientRect().width || 160);
+    const computed = getComputedStyle(track);
+    const gap = Math.round(parseFloat(computed.columnGap || computed.gap || '0') || 0);
+    // Passo um pouco menor que 1 card para evitar "pulo" exagerado no mobile.
+    return Math.max(96, Math.round((slideWidth + gap) * 0.9));
+  };
+
   const updateArrows = () => {
     const maxLeft = Math.max(0, track.scrollWidth - track.clientWidth - 2);
     prev.disabled = track.scrollLeft <= 2;
@@ -239,10 +247,10 @@ function renderMostBooked(items, services) {
   };
 
   prev.onclick = () => {
-    track.scrollBy({ left: -step, behavior: 'smooth' });
+    track.scrollBy({ left: -getStep(), behavior: 'smooth' });
   };
   next.onclick = () => {
-    track.scrollBy({ left: step, behavior: 'smooth' });
+    track.scrollBy({ left: getStep(), behavior: 'smooth' });
   };
 
   track.onscroll = updateArrows;

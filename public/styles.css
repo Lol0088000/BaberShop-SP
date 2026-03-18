@@ -340,12 +340,25 @@ h2 {
 }
 
 .most-booked-widget .service-info {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: flex-start;
+  gap: 8px;
 }
 
 .most-booked-widget .service-info h3 {
+  margin: 0;
   font-size: 16px;
   line-height: 1.2;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.most-booked-widget .duration {
+  white-space: nowrap;
+  line-height: 1.2;
+  font-size: 13px;
+  text-align: right;
 }
 
 .most-booked-widget .service-desc {
