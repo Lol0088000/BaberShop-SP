@@ -11,6 +11,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .firebase/
+.firebase_diag*.json
+firebase_diag*.json
+.firebase_*.log
 .tmp/
 
 # OS/editor files
