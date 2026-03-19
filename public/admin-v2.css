@@ -1958,6 +1958,17 @@
     width: 100%;
   }
 
+  /* section-head responsivo em tablets também */
+  .section-head {
+    flex-wrap: wrap;
+  }
+
+  /* botoes no section-controls se esticam */
+  .section-controls .primary-btn,
+  .section-controls .ghost-btn {
+    flex: 1 1 auto;
+  }
+
   #tab-agenda .section-controls {
     justify-content: start;
   }
@@ -2114,5 +2125,101 @@
 
   .admin-hero {
     border-radius: 22px;
+  }
+
+  /* section-head: empilhar verticalmente em mobile */
+  .section-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .section-head > * {
+    width: 100%;
+  }
+
+  /* form-grid: 1 coluna em mobile, span-2 vira linha inteira */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid .span-2 {
+    grid-column: 1 / -1;
+  }
+
+  /* section-controls: empilhar botões verticalmente */
+  .section-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-controls .primary-btn,
+  .section-controls .ghost-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* settings-showcase: tabela com scroll */
+  .settings-showcase-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* tabela de admins com scroll */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ações da tabela (Editar/Excluir) em coluna */
+  .table-actions {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .table-action {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* settings-showcase-actions: botões maiores em mobile */
+  .settings-showcase-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .settings-showcase-actions .primary-btn,
+  .settings-showcase-actions .ghost-btn {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* filter-row: chips em linha com scroll horizontal */
+  .filter-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+
+  .filter-row::-webkit-scrollbar {
+    height: 3px;
+  }
+
+  /* remove-admin-btn ocupa linha inteira */
+  .remove-admin-btn {
+    width: 100%;
+  }
+
+  /* panel-card padding reduzido */
+  .settings-showcase-card {
+    padding: 16px;
+  }
+
+  /* split-layout já vai para 1 col no @media 1040, mas garantir padding */
+  .split-layout > .panel-card {
+    min-width: 0;
   }
 }
