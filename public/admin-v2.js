@@ -29,6 +29,9 @@ const state = {
     financeMemberId: 'all',
     financeAnchorDate: getLocalIsoDate(),
     financeChartRange: 'day',
+    reportMemberId: 'all',
+    reportAnchorDate: getLocalIsoDate(),
+    reportRange: 'month',
     currentAdminUser: null,
     serviceCategoryFilter: 'all',
     searchQuery: '',
@@ -1538,19 +1541,93 @@ function renderFinance() {
 }
 
 function renderReports() {
-  const appointments = getFilteredAppointments({ startDate: getMonthRange(state.ui.financeAnchorDate).start, endDate: getMonthRange(state.ui.financeAnchorDate).end });
+  const reportDateInput = document.getElementById('reportAnchorDate');
+  if (reportDateInput) {
+    reportDateInput.value = state.ui.reportAnchorDate;
+  }
+
+  renderMemberFilters('reportMemberFilters', state.ui.reportMemberId, 'report-member');
+
+  const rangeType = state.ui.reportRange || 'month';
+  let range;
+  if (rangeType === 'day') {
+    range = { start: state.ui.reportAnchorDate, end: state.ui.reportAnchorDate };
+  } else if (rangeType === 'week') {
+    range = getWeekRange(state.ui.reportAnchorDate);
+  } else {
+    range = getMonthRange(state.ui.reportAnchorDate);
+  }
+
+  const periodLabel = rangeType === 'day'
+    ? `Dia ${formatDate(range.start)}`
+    : rangeType === 'week'
+      ? `Semana de ${formatDate(range.start)} a ${formatDate(range.end)}`
+      : `Mês de ${formatDate(range.start)} a ${formatDate(range.end)}`;
+  const reportPeriodLabel = document.getElementById('reportPeriodLabel');
+  if (reportPeriodLabel) {
+    reportPeriodLabel.textContent = periodLabel;
+  }
+
+  document.querySelectorAll('[data-report-range]').forEach((button) => {
+    button.classList.toggle('active', button.dataset.reportRange === rangeType);
+  });
+
+  const appointments = getFilteredAppointments({
+    memberId: state.ui.reportMemberId,
+    startDate: range.start,
+    endDate: range.end
+  });
   const serviceRank = {};
   const categoryRank = {};
   const dailyRank = {};
+  const memberPerf = {};
 
   appointments.forEach((appointment) => {
     const service = byId(state.data.services, appointment.serviceId);
+    const memberName = byName(state.data.team, appointment.teamId, 'Sem profissional');
+    const revenue = getAppointmentValue(appointment);
     const serviceName = service?.name || 'Serviço removido';
     const categoryName = service?.category || 'Sem categoria';
+
     serviceRank[serviceName] = (serviceRank[serviceName] || 0) + 1;
-    categoryRank[categoryName] = (categoryRank[categoryName] || 0) + getAppointmentValue(appointment);
-    dailyRank[appointment.date] = (dailyRank[appointment.date] || 0) + getAppointmentValue(appointment);
+    categoryRank[categoryName] = (categoryRank[categoryName] || 0) + revenue;
+    dailyRank[appointment.date] = (dailyRank[appointment.date] || 0) + revenue;
+
+    if (!memberPerf[memberName]) {
+      memberPerf[memberName] = { count: 0, revenue: 0 };
+    }
+    memberPerf[memberName].count += 1;
+    memberPerf[memberName].revenue += revenue;
   });
+
+  const perfEntries = Object.entries(memberPerf);
+  const topAttendance = perfEntries.slice().sort((a, b) => b[1].count - a[1].count)[0];
+  const topRevenue = perfEntries.slice().sort((a, b) => b[1].revenue - a[1].revenue)[0];
+
+  const topAttendanceEl = document.getElementById('reportTopAttendance');
+  const topAttendanceMetaEl = document.getElementById('reportTopAttendanceMeta');
+  const topRevenueEl = document.getElementById('reportTopRevenue');
+  const topRevenueMetaEl = document.getElementById('reportTopRevenueMeta');
+
+  if (topAttendanceEl && topAttendanceMetaEl) {
+    if (topAttendance) {
+      topAttendanceEl.textContent = topAttendance[0];
+      topAttendanceMetaEl.textContent = `${compactNumber(topAttendance[1].count)} atendimento(s)`;
+    } else {
+      topAttendanceEl.textContent = '-';
+      topAttendanceMetaEl.textContent = 'Sem dados no período.';
+    }
+  }
+
+  if (topRevenueEl && topRevenueMetaEl) {
+    if (topRevenue) {
+      topRevenueEl.textContent = topRevenue[0];
+      topRevenueMetaEl.textContent = `${money(topRevenue[1].revenue)} no período`;
+    } else {
+      topRevenueEl.textContent = '-';
+      topRevenueMetaEl.textContent = 'Sem dados no período.';
+    }
+  }
 
   document.getElementById('reportServiceRanking').innerHTML = renderRankingList(serviceRank, 'atendimentos');
   document.getElementById('reportCategoryRanking').innerHTML = renderRankingList(categoryRank, 'receita', true);
@@ -2289,6 +2366,11 @@ function wireActions() {
     renderReports();
   });
 
+  document.getElementById('reportAnchorDate')?.addEventListener('change', (event) => {
+    state.ui.reportAnchorDate = event.target.value || getLocalIsoDate();
+    renderReports();
+  });
+
   document.getElementById('serviceCategoryFilter').addEventListener('change', (event) => {
     state.ui.serviceCategoryFilter = event.target.value || 'all';
     renderServices();
@@ -2324,6 +2406,7 @@ function wireActions() {
     const dashboardMember = event.target.closest('[data-dashboard-member]');
     const agendaMember = event.target.closest('[data-agenda-member]');
     const financeMember = event.target.closest('[data-finance-member]');
+    const reportMember = event.target.closest('[data-report-member]');
     if (dashboardMember) {
       state.ui.dashboardMemberId = dashboardMember.dataset.dashboardMember;
       renderDashboard();
@@ -2339,11 +2422,23 @@ function wireActions() {
       renderFinance();
       return;
     }
+    if (reportMember) {
+      state.ui.reportMemberId = reportMember.dataset.reportMember;
+      renderReports();
+      return;
+    }
 
     const financeRange = event.target.closest('[data-finance-range]');
     if (financeRange) {
       state.ui.financeChartRange = financeRange.dataset.financeRange || 'day';
       renderFinance();
+      return;
+    }
+
+    const reportRange = event.target.closest('[data-report-range]');
+    if (reportRange) {
+      state.ui.reportRange = reportRange.dataset.reportRange || 'month';
+      renderReports();
       return;
     }
 

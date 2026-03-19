@@ -558,12 +558,43 @@
           </section>
 
           <section class="tab-panel" id="tab-reports" hidden>
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
+                  <h2>Filtros do relatório</h2>
+                  <p>Analise por barbeiro e por período para ver quem atendeu mais e quem faturou mais.</p>
+                </div>
+                <div class="section-controls">
+                  <input class="date-field" id="reportAnchorDate" type="date" />
+                </div>
+              </div>
+              <div class="filter-row" id="reportRangeFilters">
+                <button class="chip" type="button" data-report-range="day">Dia</button>
+                <button class="chip" type="button" data-report-range="week">Semana</button>
+                <button class="chip active" type="button" data-report-range="month">Mês</button>
+              </div>
+              <div class="filter-row" id="reportMemberFilters"></div>
+              <p class="form-help" id="reportPeriodLabel"></p>
+              <div class="info-grid">
+                <article class="info-card">
+                  <span>Quem atendeu mais</span>
+                  <strong id="reportTopAttendance">-</strong>
+                  <small id="reportTopAttendanceMeta">Sem dados no período.</small>
+                </article>
+                <article class="info-card">
+                  <span>Quem ganhou mais</span>
+                  <strong id="reportTopRevenue">-</strong>
+                  <small id="reportTopRevenueMeta">Sem dados no período.</small>
+                </article>
+              </div>
+            </div>
+
             <div class="settings-grid">
               <div class="panel-card">
                 <div class="section-head">
                   <div>
                     <h2>Top serviços</h2>
-                    <p>Ranking do mês com base em quantidade de atendimentos.</p>
+                    <p>Ranking do período selecionado com base em quantidade de atendimentos.</p>
                   </div>
                 </div>
                 <div id="reportServiceRanking"></div>
@@ -584,7 +615,7 @@
               <div class="section-head">
                 <div>
                   <h2>Faturamento diário do período</h2>
-                  <p>Leitura rápida dos últimos dias com receita registrada.</p>
+                  <p>Leitura rápida por dia dentro do período filtrado.</p>
                 </div>
               </div>
               <div id="reportDailyBars"></div>
