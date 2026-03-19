@@ -626,6 +626,37 @@
             <div class="panel-card">
               <div class="section-head">
                 <div>
+                  <h2>Gerenciar administradores</h2>
+                  <p>Adicione ou remova administradores. Eles nao precisam ter cadastro prévio.</p>
+                </div>
+              </div>
+              <form id="addAdminForm" class="form-grid">
+                <label>Email do novo admin
+                  <input id="addAdminEmail" type="email" placeholder="admin@example.com" required />
+                </label>
+              </form>
+              <div class="section-controls" style="margin-top: 16px">
+                <button class="primary-btn" id="addAdminButton" type="button">Adicionar admin</button>
+              </div>
+              <p class="feedback" id="addAdminFeedback"></p>
+              <div class="table-wrap">
+                <table class="table" id="adminsTable">
+                  <thead>
+                    <tr>
+                      <th>Email</th>
+                      <th>Nome</th>
+                      <th>Status</th>
+                      <th>Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel-card">
+              <div class="section-head">
+                <div>
                   <h2>Configurações gerais</h2>
                   <p>Identidade da barbearia, plano, URL e apresentação pública.</p>
                 </div>

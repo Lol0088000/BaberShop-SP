@@ -1663,6 +1663,7 @@ function renderDailyBars(rankMap) {
 
 function renderSettings() {
   renderSettingsForm();
+  loadAdmins();
 
   const highlights = state.data.mostBooked
     .filter((item) => matchesSearch(item.label, item.subtitle, byName(state.data.services, item.serviceId)))
@@ -1991,6 +1992,93 @@ async function saveSettings() {
   }
 }
 
+async function loadAdmins() {
+  try {
+    const response = await api('/api/admin/users', { method: 'GET' });
+    const admins = response?.admins || [];
+    const tbody = document.querySelector('#adminsTable tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = admins.map((admin) => `
+      <tr>
+        <td>${escapeHtml(admin.email)}</td>
+        <td>${escapeHtml(admin.displayName || '-')}</td>
+        <td>
+          <span class="status-badge status-${admin.status === 'cadastrado' ? 'confirmed' : 'pending'}">
+            ${admin.status === 'cadastrado' ? 'Cadastrado' : 'Aguardando login'}
+          </span>
+        </td>
+        <td>
+          <button class="ghost-btn remove-admin-btn" type="button" data-email="${escapeHtml(admin.email)}" ${admin.uid ? '' : 'style="opacity:0.5"'}>
+            Remover
+          </button>
+        </td>
+      </tr>
+    `).join('');
+
+    // Setup event listeners para botões de remover
+    document.querySelectorAll('.remove-admin-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const email = btn.dataset.email;
+        if (confirm(`Tem certeza que deseja remover ${email} como admin?`)) {
+          await removeAdmin(email);
+        }
+      });
+    });
+  } catch (error) {
+    console.error('Erro ao carregar admins:', error);
+  }
+}
+
+async function addAdmin() {
+  try {
+    const emailInput = document.getElementById('addAdminEmail');
+    const email = String(emailInput.value || '').trim().toLowerCase();
+
+    if (!email) {
+      setFeedback('addAdminFeedback', 'Informe um email.', true);
+      return;
+    }
+
+    const response = await api('/api/admin/users/grant-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    setFeedback('addAdminFeedback', response?.message || 'Admin adicionado com sucesso.');
+    emailInput.value = '';
+    await loadAdmins();
+  } catch (error) {
+    setFeedback('addAdminFeedback', `Erro: ${error.message}`, true);
+  }
+}
+
+async function removeAdmin(email) {
+  try {
+    await api(`/api/admin/users/${encodeURIComponent(email)}/revoke-admin`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    setFeedback('addAdminFeedback', 'Admin removido com sucesso.');
+    await loadAdmins();
+  } catch (error) {
+    setFeedback('addAdminFeedback', `Erro ao remover: ${error.message}`, true);
+  }
+}
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text || '').replace(/[&<>"']/g, (char) => map[char]);
+}
+
 async function saveService() {
   try {
     const form = document.getElementById('serviceForm');
@@ -2274,6 +2362,13 @@ function wireActions() {
   });
 
   document.getElementById('saveSettings').addEventListener('click', saveSettings);
+  document.getElementById('addAdminButton')?.addEventListener('click', addAdmin);
+  document.getElementById('addAdminEmail')?.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addAdmin();
+    }
+  });
   document.getElementById('saveService').addEventListener('click', saveService);
   document.getElementById('clearService').addEventListener('click', clearServiceForm);
   document.getElementById('addServiceCategory')?.addEventListener('click', addServiceCategory);

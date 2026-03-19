@@ -759,6 +759,24 @@ app.put('/api/admin/settings', async (req, res) => {
   res.json(store.settings);
 });
 
+app.get('/api/admin/users', async (req, res) => {
+  const store = await readStore();
+  const settings = normalizeSettings(store.settings);
+  const adminUsers = (store.users || [])
+    .filter((u) => String(u.role || '').toLowerCase() === 'admin')
+    .map((u) => ({
+      uid: u.uid || '',
+      email: String(u.email || ''),
+      displayName: String(u.displayName || ''),
+      status: u.uid ? 'cadastrado' : 'pendente'
+    }));
+
+  return res.json({
+    admins: adminUsers,
+    ownerId: settings.ownerId
+  });
+});
+
 app.post('/api/admin/users/grant-admin', async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   if (!isValidEmail(email)) {
@@ -771,29 +789,77 @@ app.post('/api/admin/users/grant-admin', async (req, res) => {
     return res.status(403).json({ message: 'Somente o dono pode adicionar novos administradores.' });
   }
 
-  const idx = (store.users || []).findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
-  if (idx === -1) {
-    return res.status(404).json({ message: 'Usuario nao encontrado. Peca para esse email fazer login pelo menos uma vez.' });
-  }
-
-  const current = store.users[idx] || {};
+  store.users = Array.isArray(store.users) ? store.users : [];
+  let idx = store.users.findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
+  
+  const now = new Date().toISOString();
   const updated = {
-    ...current,
-    email: String(current.email || email).trim(),
-    role: 'admin'
+    uid: idx >= 0 ? store.users[idx].uid : '',
+    email: email,
+    displayName: idx >= 0 ? (store.users[idx].displayName || '') : '',
+    photoUrl: idx >= 0 ? (store.users[idx].photoUrl || '') : '',
+    role: 'admin',
+    createdAt: idx >= 0 ? store.users[idx].createdAt : now,
+    lastLoginAt: idx >= 0 ? store.users[idx].lastLoginAt : null,
+    phone: idx >= 0 ? (store.users[idx].phone || '') : ''
   };
 
-  store.users[idx] = updated;
+  if (idx === -1) {
+    // Usuario ainda nao existe: criar com role admin ja pronto
+    store.users.push(updated);
+  } else {
+    // Usuario ja existe: atualizar role
+    store.users[idx] = { ...store.users[idx], ...updated };
+  }
+
   await writeStore(store);
 
   return res.json({
     ok: true,
     user: {
-      uid: updated.uid,
+      uid: updated.uid || '(nao cadastrado)',
       email: updated.email,
-      displayName: updated.displayName || '',
+      displayName: updated.displayName,
       role: updated.role
-    }
+    },
+    message: 'Administrador adicionado. Quando fizer login, ja estara como admin.'
+  });
+});
+
+app.delete('/api/admin/users/:email/revoke-admin', async (req, res) => {
+  const email = String(req.params.email || '').trim().toLowerCase();
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ message: 'Email invalido.' });
+  }
+
+  const store = await readStore();
+  const settings = normalizeSettings(store.settings);
+  const ownerId = String(settings.ownerId || '').trim();
+  const requesterUid = String(req.authUser?.uid || '').trim();
+
+  // Apenas o dono pode remover admins
+  if (FIREBASE_AUTH_ENABLED && ownerId && requesterUid !== ownerId) {
+    return res.status(403).json({ message: 'Somente o dono pode remover administradores.' });
+  }
+
+  store.users = Array.isArray(store.users) ? store.users : [];
+  const idx = store.users.findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
+
+  if (idx === -1) {
+    return res.status(404).json({ message: 'Usuario nao encontrado.' });
+  }
+
+  // Nao permitir remover o dono
+  if (ownerId && ownerId === store.users[idx].uid) {
+    return res.status(403).json({ message: 'Nao é possivel remover o dono da barbearia.' });
+  }
+
+  store.users[idx].role = 'user';
+  await writeStore(store);
+
+  return res.json({
+    ok: true,
+    message: 'Admin removido com sucesso.'
   });
 });
 
