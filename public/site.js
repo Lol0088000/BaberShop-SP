@@ -411,6 +411,85 @@ function renderReviews(reviews) {
   });
 }
 
+function setupPublicReviewForm(initialReviews, profile) {
+  const openBtn = document.getElementById('openReviewForm');
+  const form = document.getElementById('reviewPublicForm');
+  const cancelBtn = document.getElementById('cancelReviewForm');
+  const authorInput = document.getElementById('reviewPublicAuthor');
+  const commentInput = document.getElementById('reviewPublicComment');
+  const ratingInput = document.getElementById('reviewPublicRating');
+  const feedback = document.getElementById('reviewPublicFeedback');
+
+  if (!openBtn || !form || !cancelBtn || !commentInput || !ratingInput || !feedback) {
+    return;
+  }
+
+  let reviewsCache = Array.isArray(initialReviews) ? [...initialReviews] : [];
+  const fallbackAuthor = String(profile?.displayName || profile?.email || '').trim();
+  if (authorInput && fallbackAuthor && !authorInput.value.trim()) {
+    authorInput.value = fallbackAuthor;
+  }
+
+  const setFormVisible = (visible) => {
+    form.hidden = !visible;
+    openBtn.hidden = visible;
+    if (visible) {
+      commentInput.focus();
+    }
+  };
+
+  openBtn.addEventListener('click', () => setFormVisible(true));
+  cancelBtn.addEventListener('click', () => {
+    form.reset();
+    if (authorInput && fallbackAuthor) authorInput.value = fallbackAuthor;
+    feedback.textContent = '';
+    setFormVisible(false);
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const author = String(authorInput?.value || '').trim();
+    const comment = String(commentInput.value || '').trim();
+    const rating = Number(ratingInput.value || 5);
+
+    if (comment.length < 3) {
+      feedback.textContent = 'Escreva uma observacao com pelo menos 3 caracteres.';
+      return;
+    }
+
+    feedback.textContent = 'Enviando observacao...';
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author, comment, rating })
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body?.message || 'Nao foi possivel enviar sua observacao.');
+      }
+
+      reviewsCache = [body, ...reviewsCache];
+      renderReviews(reviewsCache);
+
+      form.reset();
+      if (authorInput && fallbackAuthor) authorInput.value = fallbackAuthor;
+      feedback.textContent = 'Observacao enviada com sucesso!';
+      setFormVisible(false);
+    } catch (error) {
+      feedback.textContent = error.message || 'Erro ao enviar observacao.';
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+}
+
 async function init() {
   const profile = await loadProfileFromSession().catch(() => null);
   renderTopbarAuth(profile);
@@ -452,6 +531,7 @@ async function init() {
   renderCatalog(data.catalog || []);
   renderTeam(data.team || []);
   renderReviews(data.reviews || []);
+  setupPublicReviewForm(data.reviews || [], profile);
 }
 
 init();

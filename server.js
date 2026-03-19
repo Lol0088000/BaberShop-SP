@@ -721,6 +721,31 @@ app.get('/api/site', async (_req, res) => {
   });
 });
 
+app.post('/api/reviews', async (req, res) => {
+  const author = String(req.body?.author || 'Cliente').trim().slice(0, 80) || 'Cliente';
+  const comment = String(req.body?.comment || '').trim();
+  const ratingRaw = Number(req.body?.rating || 5);
+  const rating = Math.max(1, Math.min(5, Number.isFinite(ratingRaw) ? ratingRaw : 5));
+
+  if (comment.length < 3) {
+    return res.status(400).json({ message: 'Escreva uma observacao com pelo menos 3 caracteres.' });
+  }
+
+  const store = await readStore();
+  const review = {
+    id: uid('rv'),
+    author,
+    rating,
+    comment: comment.slice(0, 500),
+    date: dayjs().format('YYYY-MM-DD')
+  };
+
+  store.reviews = Array.isArray(store.reviews) ? store.reviews : [];
+  store.reviews.unshift(review);
+  await writeStore(store);
+  return res.status(201).json(review);
+});
+
 app.get('/api/admin/data', async (_req, res) => {
   const store = await readStore();
   store.settings = normalizeSettings(store.settings);
