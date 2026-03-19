@@ -7,7 +7,13 @@ services:
     startCommand: npm start
     autoDeploy: true
     healthCheckPath: /api/health
+    disk:
+      name: barbearia-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
+      - key: DATA_PATH
+        value: /var/data/store.json
       - key: FIREBASE_WEB_API_KEY
         sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON

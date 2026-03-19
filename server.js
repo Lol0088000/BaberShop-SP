@@ -10,7 +10,9 @@ const admin = require('firebase-admin');
 const app = express();
 const PORT = process.env.PORT || 3030;
 
-const DATA_PATH = path.join(__dirname, 'data', 'store.json');
+const DATA_PATH = process.env.DATA_PATH
+  ? path.resolve(process.env.DATA_PATH)
+  : path.join(__dirname, 'data', 'store.json');
 const FIREBASE_STORE_COLLECTION = process.env.FIREBASE_STORE_COLLECTION || 'barbeariaApp';
 const FIREBASE_STORE_DOC = process.env.FIREBASE_STORE_DOC || 'store';
 const FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY || process.env.FIREBASE_API_KEY || '';
@@ -257,7 +259,12 @@ app.get('/api/firebase/config', (_req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, authEnabled: FIREBASE_AUTH_ENABLED });
+  res.json({
+    ok: true,
+    authEnabled: FIREBASE_AUTH_ENABLED,
+    storageMode: FIREBASE_STORE_ENABLED ? 'firestore' : 'file',
+    dataPath: FIREBASE_STORE_ENABLED ? null : DATA_PATH
+  });
 });
 
 app.get('/cliente', (_req, res) => {
@@ -269,7 +276,7 @@ app.get('/dono', (_req, res) => {
 });
 
 async function ensureDataFile() {
-  if (FIREBASE_AUTH_ENABLED) {
+  if (FIREBASE_STORE_ENABLED) {
     return;
   }
 
