@@ -107,23 +107,19 @@ p {
 }
 
 .profile-icon {
-  inline-size: 15px;
-  block-size: 15px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  position: relative;
+  inline-size: 18px;
+  block-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(197, 138, 43, 0.2), rgba(197, 138, 43, 0.04));
 }
 
-.profile-icon::before {
-  content: '';
-  position: absolute;
-  inline-size: 7px;
-  block-size: 7px;
-  border-radius: 50%;
-  background: currentColor;
-  left: 50%;
-  top: -5px;
-  transform: translateX(-50%);
+.profile-icon svg {
+  inline-size: 15px;
+  block-size: 15px;
+  fill: currentColor;
 }
 
 .brand {

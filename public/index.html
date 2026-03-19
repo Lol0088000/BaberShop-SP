@@ -24,7 +24,11 @@
           <a id="adminLink" class="btn outline" href="/admin.html" hidden>Admin</a>
           <a id="loginLink" class="btn outline" href="/login.html">Login</a>
           <a id="profileLink" class="btn outline profile-btn" href="/perfil.html" hidden>
-            <span class="profile-icon" aria-hidden="true"></span>
+            <span class="profile-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+                <path d="M12 12.3a4.15 4.15 0 1 0 0-8.3 4.15 4.15 0 0 0 0 8.3Zm0 1.8c-3.78 0-6.9 2.08-6.9 4.7 0 .66.54 1.2 1.2 1.2h11.4c.66 0 1.2-.54 1.2-1.2 0-2.62-3.12-4.7-6.9-4.7Z" />
+              </svg>
+            </span>
             <span>Perfil</span>
           </a>
           <button id="themeToggleSite" class="btn outline theme-toggle" type="button">Modo escuro</button>
@@ -85,11 +89,11 @@
           <label>
             Nota
             <select id="reviewPublicRating">
-              <option value="5">5</option>
-              <option value="4">4</option>
-              <option value="3">3</option>
-              <option value="2">2</option>
-              <option value="1">1</option>
+              <option value="5">★★★★★ (5) - Melhor serviço</option>
+              <option value="4">★★★★☆ (4) - Muito bom</option>
+              <option value="3">★★★☆☆ (3) - Bom</option>
+              <option value="2">★★☆☆☆ (2) - Pode melhorar</option>
+              <option value="1">★☆☆☆☆ (1) - Pior serviço</option>
             </select>
           </label>
           <div class="review-public-actions span-2">
