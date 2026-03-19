@@ -110,6 +110,12 @@ function applyClientProfile(profile, force = false) {
   }
 }
 
+function renderAdminShortcut(profile) {
+  const adminLink = document.getElementById('scheduleAdminLink');
+  if (!adminLink) return;
+  adminLink.hidden = !Boolean(profile?.isAdmin);
+}
+
 async function loadClientProfile() {
   const idToken = getStoredIdToken();
   if (!idToken) return;
@@ -123,6 +129,7 @@ async function loadClientProfile() {
     if (!profile || typeof profile !== 'object') return;
 
     state.profile = profile;
+    renderAdminShortcut(profile);
     applyClientProfile(profile);
   } catch {
     // Sem impacto no fluxo de agendamento quando perfil nao puder ser carregado.

@@ -869,6 +869,11 @@ function renderShellMeta() {
   document.getElementById('notificationsCounter').textContent = compactNumber(notificationCount);
   document.getElementById('notificationsCounter').hidden = notificationCount <= 0;
   renderNotificationsPanel();
+
+  const adminTopbarLink = document.getElementById('adminTopbarAdminLink');
+  if (adminTopbarLink) {
+    adminTopbarLink.hidden = !Boolean(currentAdmin?.isAdmin);
+  }
 }
 
 async function syncAuthSessionUser() {
@@ -896,7 +901,8 @@ async function loadCurrentAdminProfile() {
       uid: String(profile?.uid || '').trim(),
       displayName: String(profile?.displayName || '').trim(),
       email: String(profile?.email || '').trim(),
-      photoUrl: String(profile?.photoUrl || '').trim()
+      photoUrl: String(profile?.photoUrl || '').trim(),
+      isAdmin: Boolean(profile?.isAdmin)
     };
   } catch (_error) {
     state.ui.currentAdminUser = null;

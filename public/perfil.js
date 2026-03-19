@@ -72,6 +72,19 @@ function setFeedback(message, isError = false) {
   el.classList.toggle('error', Boolean(isError));
 }
 
+function isAdminRole(value) {
+  if (value === true) return true;
+  if (value === 1) return true;
+  const normalized = String(value || '').trim().toLowerCase();
+  return normalized === 'true' || normalized === '1' || normalized === 'admin';
+}
+
+function renderAdminShortcut(profile) {
+  const adminLink = document.getElementById('profileAdminLink');
+  if (!adminLink) return;
+  adminLink.hidden = !isAdminRole(profile?.isAdmin);
+}
+
 async function fetchFirebaseApiKey() {
   const res = await fetch('/api/firebase/config');
   const cfg = await res.json().catch(() => ({}));
@@ -198,6 +211,7 @@ function renderAppointments(items = []) {
 
 async function loadProfileAndAppointments() {
   const profile = await authFetch('/api/auth/profile');
+  renderAdminShortcut(profile);
 
   document.getElementById('profileName').value = String(profile?.displayName || '');
   document.getElementById('profileEmail').value = String(profile?.email || '');

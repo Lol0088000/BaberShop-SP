@@ -16,6 +16,10 @@
   transition: all 0.2s ease;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', 'Segoe UI', sans-serif;

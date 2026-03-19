@@ -93,6 +93,7 @@ async function loadProfileFromSession() {
 function renderTopbarAuth(profile) {
   const loginLink = document.getElementById('loginLink');
   const profileLink = document.getElementById('profileLink');
+  const adminLink = document.getElementById('adminLink');
   const userWrap = document.getElementById('topbarUserInfo');
   const userAvatar = document.getElementById('topbarUserAvatar');
   const userName = document.getElementById('topbarUserName');
@@ -105,6 +106,7 @@ function renderTopbarAuth(profile) {
   if (!profile) {
     loginLink.hidden = false;
     profileLink.hidden = true;
+    if (adminLink) adminLink.hidden = true;
     userWrap.hidden = true;
     userAvatar.src = buildAvatarDataUri('U');
     return;
@@ -114,6 +116,7 @@ function renderTopbarAuth(profile) {
   const safePhoto = getSafePhotoUrl(profile.photoUrl);
   loginLink.hidden = true;
   profileLink.hidden = false;
+  if (adminLink) adminLink.hidden = !Boolean(profile?.isAdmin);
   userWrap.hidden = false;
   userName.textContent = profile.displayName || 'Usuario';
   userEmail.textContent = profile.email || '';
