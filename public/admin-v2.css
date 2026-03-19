@@ -17,6 +17,7 @@
   --admin-shadow: 0 24px 80px rgba(2, 6, 23, 0.45);
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   font-family: 'Inter', sans-serif;
   background:
     radial-gradient(circle at top left, rgba(99, 102, 241, 0.18), transparent 28%),
@@ -46,10 +47,12 @@
     linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }
 
+/* Box-sizing universal + limite de largura para evitar overflow horizontal */
 .admin-body *,
 .admin-body *::before,
 .admin-body *::after {
   box-sizing: border-box;
+  max-width: 100%;
 }
 
 .admin-auth-gate {
@@ -228,6 +231,7 @@
 
 .admin-body .topbar-inner {
   width: min(1480px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
   margin: 0 auto;
   min-height: 72px;
   display: flex;
@@ -518,11 +522,13 @@
 
 .admin-layout {
   width: min(1480px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
   margin: 22px auto 32px;
   display: grid;
   grid-template-columns: 252px minmax(0, 1fr);
   gap: 24px;
   align-items: start;
+  overflow: hidden;
 }
 
 .admin-modal {
@@ -784,6 +790,8 @@
 .admin-main {
   min-width: 0;
   width: min(1180px, 100%);
+  max-width: 100%;
+  overflow: hidden;
   margin: 0 auto;
 }
 
@@ -874,6 +882,8 @@
 .admin-content-stack {
   display: grid;
   gap: 22px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tab-panel[hidden] {
@@ -895,11 +905,15 @@
 .panel-card {
   padding: 24px;
   border-radius: 24px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .tab-panel {
   display: grid;
   gap: 22px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .panel-card h2 {
@@ -1725,6 +1739,9 @@
   border-radius: 18px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(15, 23, 42, 0.58);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
 }
 
 .settings-showcase-table-wrap .table {
@@ -1744,7 +1761,7 @@
 
 .split-layout {
   display: grid;
-  grid-template-columns: minmax(430px, 0.95fr) minmax(560px, 1.05fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   gap: 18px;
   align-items: start;
 }
