@@ -245,7 +245,32 @@ function normalizeSettings(settings = {}) {
 }
 
 app.use(express.json({ limit: '25mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// iOS Safari pode reter HTML/CSS/JS antigo por cache agressivo.
+// Forca revalidacao para paginas e assets web (nao afeta respostas de API).
+app.disable('etag');
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !String(req.path || '').startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.setHeader('Surrogate-Control', 'no-store');
+  }
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'public'), {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, filePath) => {
+    if (/\.(?:html?|css|js)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Surrogate-Control', 'no-store');
+    }
+  }
+}));
 
 app.get('/api/firebase/config', (_req, res) => {
   res.json({
@@ -333,6 +358,110 @@ function getBearerToken(req) {
   return authHeader.slice(7).trim();
 }
 
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function findUserByIdentity(users, identity = {}) {
+  const list = Array.isArray(users) ? users : [];
+  const uid = String(identity.uid || '').trim();
+  const email = normalizeEmail(identity.email);
+
+  let idx = -1;
+  if (uid) {
+    idx = list.findIndex((item) => String(item?.uid || '').trim() === uid);
+  }
+
+  if (idx === -1 && email) {
+    idx = list.findIndex((item) => normalizeEmail(item?.email) === email);
+  }
+
+  return {
+    idx,
+    user: idx >= 0 ? list[idx] : null
+  };
+}
+
+function resolveUserIdentity(users, identity = {}) {
+  const list = Array.isArray(users) ? users : [];
+  const uid = String(identity.uid || '').trim();
+  const email = normalizeEmail(identity.email);
+  const indexes = [];
+
+  if (uid) {
+    list.forEach((item, idx) => {
+      if (String(item?.uid || '').trim() === uid) {
+        indexes.push(idx);
+      }
+    });
+  }
+
+  if (email) {
+    list.forEach((item, idx) => {
+      if (!indexes.includes(idx) && normalizeEmail(item?.email) === email) {
+        indexes.push(idx);
+      }
+    });
+  }
+
+  const primaryIdx = indexes.length ? indexes[0] : -1;
+  const primaryUser = primaryIdx >= 0 ? list[primaryIdx] : null;
+  const mergedUser = {
+    uid: '',
+    email: '',
+    displayName: '',
+    photoUrl: '',
+    role: 'user',
+    createdAt: '',
+    lastLoginAt: '',
+    phone: ''
+  };
+
+  indexes.forEach((idx) => {
+    const item = list[idx] || {};
+    const itemUid = String(item.uid || '').trim();
+    const itemEmail = normalizeEmail(item.email);
+    const itemDisplayName = String(item.displayName || '').trim();
+    const itemPhotoUrl = String(item.photoUrl || '').trim();
+    const itemPhone = String(item.phone || '');
+    const itemRole = String(item.role || '').trim().toLowerCase();
+    const itemCreatedAt = String(item.createdAt || '').trim();
+    const itemLastLoginAt = String(item.lastLoginAt || '').trim();
+
+    if (!mergedUser.uid && itemUid) mergedUser.uid = itemUid;
+    if (!mergedUser.email && itemEmail) mergedUser.email = itemEmail;
+    if (!mergedUser.displayName && itemDisplayName) mergedUser.displayName = itemDisplayName;
+    if (!mergedUser.photoUrl && itemPhotoUrl) mergedUser.photoUrl = itemPhotoUrl;
+    if (!mergedUser.phone && itemPhone) mergedUser.phone = itemPhone;
+    if (!mergedUser.createdAt || (itemCreatedAt && itemCreatedAt < mergedUser.createdAt)) {
+      mergedUser.createdAt = itemCreatedAt;
+    }
+    if (!mergedUser.lastLoginAt || (itemLastLoginAt && itemLastLoginAt > mergedUser.lastLoginAt)) {
+      mergedUser.lastLoginAt = itemLastLoginAt;
+    }
+    if (itemRole === 'admin') {
+      mergedUser.role = 'admin';
+    }
+  });
+
+  return {
+    idx: primaryIdx,
+    indexes,
+    user: primaryUser,
+    mergedUser
+  };
+}
+
+function removeDuplicateUsers(users, primaryIdx, indexes) {
+  const list = Array.isArray(users) ? users : [];
+  indexes
+    .filter((idx) => idx !== primaryIdx)
+    .sort((left, right) => right - left)
+    .forEach((idx) => {
+      list.splice(idx, 1);
+    });
+}
+
 async function requireAdminAuth(req, res, next) {
   if (!FIREBASE_AUTH_ENABLED) {
     return next();
@@ -349,7 +478,10 @@ async function requireAdminAuth(req, res, next) {
 
     const store = await readStore();
     const ownerId = String(store.settings?.ownerId || '').trim();
-    const savedUser = (store.users || []).find((item) => String(item.uid || '').trim() === String(decoded.uid || '').trim()) || null;
+    const { user: savedUser } = findUserByIdentity(store.users, {
+      uid: decoded.uid,
+      email: decoded.email
+    });
     const hasAdminRole = String(savedUser?.role || '').trim().toLowerCase() === 'admin';
     if (ownerId && ownerId !== decoded.uid && !hasAdminRole) {
       return res.status(403).json({ message: 'Usuario sem permissao para este painel.' });
@@ -386,32 +518,37 @@ app.post('/api/auth/session', requireUserAuth, async (req, res) => {
   const settings = normalizeSettings(store.settings);
   const user = req.authUser;
   const now = new Date().toISOString();
-  const idx = store.users.findIndex((item) => item.uid === user.uid);
-  const existingPhoto = idx >= 0 ? String(store.users[idx].photoUrl || '').trim() : '';
+  const { idx, indexes, user: currentStoredUser, mergedUser } = resolveUserIdentity(store.users, {
+    uid: user.uid,
+    email: user.email
+  });
+  const existingPhoto = String(mergedUser.photoUrl || '').trim();
   const incomingPhoto = String(req.body?.photoUrl || '').trim();
   const photoUrl = await normalizePhotoForStorage(incomingPhoto || user.picture || '', existingPhoto);
 
   // Preserva displayName e phone já salvos pelo usuario; só usa o do token
   // no primeiro login (quando ainda não há registro no store).
-  const existingDisplayName = idx >= 0 ? String(store.users[idx].displayName || '').trim() : '';
-  const existingPhone = idx >= 0 ? String(store.users[idx].phone || '') : '';
+  const existingDisplayName = String(mergedUser.displayName || '').trim();
+  const existingPhone = String(mergedUser.phone || '');
+  const wasAdmin = String(mergedUser.role || '').trim().toLowerCase() === 'admin';
 
   const nextUser = {
     uid: user.uid,
-    email: String(user.email || '').trim(),
+    email: normalizeEmail(user.email),
     displayName: existingDisplayName || String(user.name || req.body?.displayName || '').trim(),
     photoUrl,
     role: (settings.ownerId && settings.ownerId === user.uid)
-      || (idx >= 0 && String(store.users[idx].role || '').trim().toLowerCase() === 'admin')
+      || wasAdmin
       ? 'admin'
       : 'user',
-    createdAt: idx >= 0 ? store.users[idx].createdAt || now : now,
+    createdAt: mergedUser.createdAt || now,
     lastLoginAt: now,
     phone: existingPhone
   };
 
   if (idx >= 0) {
-    store.users[idx] = { ...store.users[idx], ...nextUser };
+    store.users[idx] = { ...currentStoredUser, ...mergedUser, ...nextUser };
+    removeDuplicateUsers(store.users, idx, indexes);
   } else {
     store.users.push(nextUser);
   }
@@ -429,7 +566,10 @@ app.get('/api/auth/profile', requireUserAuth, async (req, res) => {
   const store = await readStore();
   const settings = normalizeSettings(store.settings);
   const user = req.authUser;
-  const saved = store.users.find((item) => item.uid === user.uid) || null;
+  const { user: saved } = findUserByIdentity(store.users, {
+    uid: user.uid,
+    email: user.email
+  });
 
   return res.json({
     uid: user.uid,
@@ -451,13 +591,16 @@ app.put('/api/auth/profile', requireUserAuth, async (req, res) => {
   const store = await readStore();
   const user = req.authUser;
   const now = new Date().toISOString();
-  const idx = store.users.findIndex((item) => item.uid === user.uid);
+  const { idx, indexes, user: currentStoredUser, mergedUser } = resolveUserIdentity(store.users, {
+    uid: user.uid,
+    email: user.email
+  });
 
   const incomingDisplayName = String(req.body?.displayName || '').trim();
   const incomingPhone = String(req.body?.phone || '').trim();
   const incomingPhotoUrl = String(req.body?.photoUrl || '').trim();
 
-  const base = idx >= 0 ? store.users[idx] : {
+  const base = idx >= 0 ? { ...mergedUser, ...currentStoredUser } : {
     uid: user.uid,
     email: String(user.email || '').trim(),
     createdAt: now,
@@ -476,11 +619,13 @@ app.put('/api/auth/profile', requireUserAuth, async (req, res) => {
     displayName: incomingDisplayName || base.displayName || '',
     photoUrl: normalizedPhoto,
     phone: incomingPhone,
+    role: String(mergedUser.role || base.role || 'user').trim().toLowerCase() === 'admin' ? 'admin' : 'user',
     lastLoginAt: now
   };
 
   if (idx >= 0) {
     store.users[idx] = updated;
+    removeDuplicateUsers(store.users, idx, indexes);
   } else {
     store.users.push(updated);
   }
@@ -797,18 +942,18 @@ app.post('/api/admin/users/grant-admin', async (req, res) => {
   }
 
   store.users = Array.isArray(store.users) ? store.users : [];
-  let idx = store.users.findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
+  const { idx, indexes, user: currentStoredUser, mergedUser } = resolveUserIdentity(store.users, { email });
   
   const now = new Date().toISOString();
   const updated = {
-    uid: idx >= 0 ? store.users[idx].uid : '',
+    uid: idx >= 0 ? (mergedUser.uid || currentStoredUser?.uid || '') : '',
     email: email,
-    displayName: idx >= 0 ? (store.users[idx].displayName || '') : '',
-    photoUrl: idx >= 0 ? (store.users[idx].photoUrl || '') : '',
+    displayName: idx >= 0 ? (mergedUser.displayName || '') : '',
+    photoUrl: idx >= 0 ? (mergedUser.photoUrl || '') : '',
     role: 'admin',
-    createdAt: idx >= 0 ? store.users[idx].createdAt : now,
-    lastLoginAt: idx >= 0 ? store.users[idx].lastLoginAt : null,
-    phone: idx >= 0 ? (store.users[idx].phone || '') : ''
+    createdAt: idx >= 0 ? (mergedUser.createdAt || currentStoredUser?.createdAt || now) : now,
+    lastLoginAt: idx >= 0 ? (mergedUser.lastLoginAt || currentStoredUser?.lastLoginAt || null) : null,
+    phone: idx >= 0 ? (mergedUser.phone || '') : ''
   };
 
   if (idx === -1) {
@@ -816,7 +961,8 @@ app.post('/api/admin/users/grant-admin', async (req, res) => {
     store.users.push(updated);
   } else {
     // Usuario ja existe: atualizar role
-    store.users[idx] = { ...store.users[idx], ...updated };
+    store.users[idx] = { ...currentStoredUser, ...mergedUser, ...updated };
+    removeDuplicateUsers(store.users, idx, indexes);
   }
 
   await writeStore(store);
@@ -850,18 +996,23 @@ app.delete('/api/admin/users/:email/revoke-admin', async (req, res) => {
   }
 
   store.users = Array.isArray(store.users) ? store.users : [];
-  const idx = store.users.findIndex((item) => String(item.email || '').trim().toLowerCase() === email);
+  const { idx, indexes, user: currentStoredUser, mergedUser } = resolveUserIdentity(store.users, { email });
 
   if (idx === -1) {
     return res.status(404).json({ message: 'Usuario nao encontrado.' });
   }
 
   // Nao permitir remover o dono
-  if (ownerId && ownerId === store.users[idx].uid) {
+  if (ownerId && ownerId === String(mergedUser.uid || currentStoredUser?.uid || '').trim()) {
     return res.status(403).json({ message: 'Nao é possivel remover o dono da barbearia.' });
   }
 
-  store.users[idx].role = 'user';
+  store.users[idx] = {
+    ...currentStoredUser,
+    ...mergedUser,
+    role: 'user'
+  };
+  removeDuplicateUsers(store.users, idx, indexes);
   await writeStore(store);
 
   return res.json({

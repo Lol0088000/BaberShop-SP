@@ -108,19 +108,30 @@ function renderNotificationsPanel() {
   }
 
   list.innerHTML = appointments
-    .map((appointment) => `
+    .map((appointment) => {
+      const status = getAppointmentStatus(appointment);
+      const serviceName = byName(state.data.services, appointment.serviceId, 'Serviço removido');
+      const memberName = byName(state.data.team, appointment.teamId, 'Sem profissional');
+      const clientName = appointment.clientName || 'Cliente';
+      const clientPhone = appointment.clientPhone || 'Sem telefone';
+      return `
       <article class="notification-item">
         <div class="notification-item__top">
           <span class="notification-item__time">${appointment.time || '--:--'}</span>
-          <span class="status-badge status-${normalizeText(getAppointmentStatus(appointment))} notification-item__status">${statusLabel(getAppointmentStatus(appointment))}</span>
+          <span class="status-badge status-${normalizeText(status)} notification-item__status">${statusLabel(status)}</span>
         </div>
-        <div class="notification-item__client">${appointment.clientName || 'Cliente'}</div>
+        <div class="notification-item__client-line">
+          <strong class="notification-item__client">${escapeHtml(clientName)}</strong>
+          <span class="notification-item__contact">${escapeHtml(clientPhone)}</span>
+        </div>
         <div class="notification-item__meta">
-          <span>Serviço: ${byName(state.data.services, appointment.serviceId, 'Serviço removido')}</span>
-          <span>Profissional: ${byName(state.data.team, appointment.teamId, 'Sem profissional')}</span>
+          <span>Serviço: ${escapeHtml(serviceName)}</span>
+          <span>Profissional: ${escapeHtml(memberName)}</span>
+          <span>Data: ${formatDate(appointment.date)} às ${appointment.time || '--:--'}</span>
         </div>
       </article>
-    `)
+    `;
+    })
     .join('');
 }
 

@@ -25,10 +25,41 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://babershop-sp.onrender.com/",
+        "type": 302
+      },
+      {
+        "source": "/index.html",
+        "destination": "https://babershop-sp.onrender.com/",
+        "type": 302
+      },
+      {
+        "source": "/agendar.html",
+        "destination": "https://babershop-sp.onrender.com/agendar.html",
+        "type": 302
+      },
+      {
+        "source": "/login.html",
+        "destination": "https://babershop-sp.onrender.com/login.html",
+        "type": 302
+      },
+      {
+        "source": "/perfil.html",
+        "destination": "https://babershop-sp.onrender.com/perfil.html",
+        "type": 302
+      },
+      {
+        "source": "/admin.html",
+        "destination": "https://babershop-sp.onrender.com/admin.html",
+        "type": 302
+      },
       {
         "source": "**",
-        "function": "app"
+        "destination": "https://babershop-sp.onrender.com/",
+        "type": 302
       }
     ]
   }
