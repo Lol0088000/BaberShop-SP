@@ -1672,8 +1672,37 @@ function renderDailyBars(rankMap) {
     .join('');
 }
 
+function renderAllUsers() {
+  const users = state.data.users || [];
+  const tbody = document.querySelector('#allUsersTable tbody');
+  if (!tbody) return;
+
+  if (!users.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--color-muted)">Nenhum usuário cadastrado</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = users
+    .slice()
+    .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')))
+    .map((u) => {
+      const isAdmin = String(u.role || '').toLowerCase() === 'admin';
+      return `
+        <tr>
+          <td><div class="name-cell"><span class="mini-avatar">${initials(u.displayName || u.email || '?')}</span><span>${escapeHtml(u.displayName || '-')}</span></div></td>
+          <td>${escapeHtml(u.email || '-')}</td>
+          <td>${escapeHtml(u.phone || '-')}</td>
+          <td><span class="status-badge status-${isAdmin ? 'confirmed' : 'pending'}">${isAdmin ? 'Admin' : 'Cliente'}</span></td>
+          <td>${u.createdAt ? formatDate(u.createdAt.split('T')[0]) : '-'}</td>
+          <td>${u.lastLoginAt ? formatDate(u.lastLoginAt.split('T')[0]) : '-'}</td>
+        </tr>`;
+    })
+    .join('');
+}
+
 function renderSettings() {
   renderSettingsForm();
+  renderAllUsers();
   loadAdmins();
 
   const highlights = state.data.mostBooked
